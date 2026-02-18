@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside a Human Cell — Interactive 3D Diorama</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Outfit:wght@200;300;400;500;600&display=swap');
+  :root{--panel-bg:rgba(255,252,248,0.97);--text-dark:#1a1a2e;--text-mid:#3a3a50;--text-light:#6a6a80;--accent-science:#2a8a5a;--accent-math:#7a4a9a;--accent-ela:#2a6a9a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#0e1628;color:#e8e8f0;font-family:'Outfit',sans-serif;overflow:hidden;height:100vh;width:100vw;cursor:grab;}
+  body:active{cursor:grabbing;}
+  canvas{display:block;}
+
+  .intro-screen{position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#060a18 0%,#0e1838 50%,#1a1040 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.5s ease;}
+  .intro-screen.fade-out{opacity:0;pointer-events:none;}
+  .intro-screen .cell-icon{width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(100,180,255,0.25),rgba(160,80,220,0.12),transparent 70%);border:1px solid rgba(100,180,255,0.15);animation:cellGlow 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:56px;backdrop-filter:blur(8px);}
+  .intro-screen h1{font-family:'Crimson Pro',serif;font-size:46px;font-weight:700;color:#8ac4ff;margin-top:28px;letter-spacing:2px;opacity:0;animation:introFade 1.5s ease forwards 0.5s;}
+  .intro-screen .tagline{font-size:12px;letter-spacing:8px;text-transform:uppercase;color:rgba(138,196,255,0.3);margin-top:10px;opacity:0;animation:introFade 1.5s ease forwards 1s;}
+  .intro-screen .enter-btn{margin-top:40px;padding:16px 48px;background:rgba(138,196,255,0.06);border:1px solid rgba(138,196,255,0.2);color:#8ac4ff;font-family:'Outfit',sans-serif;font-size:12px;letter-spacing:6px;text-transform:uppercase;cursor:pointer;border-radius:30px;opacity:0;animation:introFade 1.5s ease forwards 1.5s;transition:all 0.4s;}
+  .intro-screen .enter-btn:hover{background:rgba(138,196,255,0.12);border-color:#8ac4ff;transform:scale(1.05);}
+  @keyframes cellGlow{0%,100%{box-shadow:0 0 40px rgba(100,180,255,0.08),0 0 80px rgba(100,60,180,0.04);}50%{box-shadow:0 0 60px rgba(100,180,255,0.15),0 0 100px rgba(100,60,180,0.08);}}
+  @keyframes introFade{to{opacity:1;}}
+
+  .hud-top{position:fixed;top:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,rgba(14,22,40,0.85),transparent);z-index:10;pointer-events:none;display:flex;align-items:flex-start;justify-content:space-between;padding:18px 28px;}
+  .hud-title h1{font-family:'Crimson Pro',serif;font-size:22px;font-weight:700;color:#8ac4ff;letter-spacing:2px;text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
+  .hud-title .sub{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(138,196,255,0.4);margin-top:2px;}
+  .hud-subjects{display:flex;gap:8px;pointer-events:auto;}
+  .subject-pill{padding:4px 12px;border-radius:16px;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);cursor:default;}
+  .subject-pill.active{color:#fff;border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);}
+
+  .hud-bottom{position:fixed;bottom:0;left:0;right:0;height:70px;background:linear-gradient(to top,rgba(14,22,40,0.85),transparent);z-index:10;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;gap:5px;}
+  .point-tab{padding:7px 14px;background:rgba(138,196,255,0.06);border:1px solid rgba(138,196,255,0.15);border-radius:20px;font-size:10px;letter-spacing:1.5px;color:rgba(138,196,255,0.5);cursor:pointer;transition:all 0.35s;text-transform:uppercase;white-space:nowrap;}
+  .point-tab:hover,.point-tab.active{background:rgba(138,196,255,0.12);border-color:#8ac4ff;color:#8ac4ff;transform:translateY(-2px);}
+  .point-tab .tab-num{font-family:'Crimson Pro',serif;font-weight:700;font-size:13px;margin-right:5px;}
+  .controls-hint{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:10;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:rgba(138,196,255,0.2);pointer-events:none;}
+
+  .info-panel{position:fixed;right:-460px;top:0;width:440px;height:100vh;background:var(--panel-bg);border-left:1px solid rgba(0,0,0,0.06);z-index:50;transition:right 0.6s cubic-bezier(0.22,1,0.36,1);backdrop-filter:blur(30px);box-shadow:-30px 0 80px rgba(0,0,0,0.2);overflow-y:auto;overflow-x:hidden;}
+  .info-panel.active{right:0;}
+  .panel-header{position:relative;padding:48px 34px 26px;background:linear-gradient(135deg,rgba(42,106,154,0.06),transparent);border-bottom:1px solid rgba(0,0,0,0.05);}
+  .panel-close{position:absolute;top:16px;right:16px;width:34px;height:34px;background:none;border:1px solid rgba(0,0,0,0.1);color:#888;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.3s;}
+  .panel-close:hover{border-color:#333;color:#333;}
+  .panel-number{font-family:'Crimson Pro',serif;font-size:68px;font-weight:700;color:rgba(0,0,0,0.04);line-height:1;position:absolute;top:18px;left:34px;}
+  .panel-header h2{font-family:'Crimson Pro',serif;font-size:24px;font-weight:600;color:var(--text-dark);line-height:1.2;position:relative;z-index:1;}
+  .panel-header .panel-subtitle{font-size:14px;color:var(--text-light);margin-top:4px;font-family:'Crimson Pro',serif;font-style:italic;}
+  .panel-curriculum{margin-top:10px;padding:6px 12px;background:rgba(42,138,90,0.07);border-radius:4px;display:inline-block;}
+  .panel-curriculum code{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--accent-science);font-family:'Outfit',sans-serif;}
+  .panel-curriculum span{font-size:11px;color:var(--text-light);margin-left:6px;}
+  .panel-subjects{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap;}
+  .panel-subj-tag{padding:3px 10px;border-radius:12px;font-size:9px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;}
+  .panel-subj-tag.science{background:rgba(42,138,90,0.08);color:var(--accent-science);}
+  .panel-subj-tag.math{background:rgba(122,74,154,0.08);color:var(--accent-math);}
+  .panel-subj-tag.ela{background:rgba(42,106,154,0.08);color:var(--accent-ela);}
+  .panel-body{padding:24px 34px 40px;}
+  .panel-body p{font-family:'Crimson Pro',serif;font-size:16px;line-height:1.8;color:var(--text-mid);margin-bottom:14px;}
+  .think-about{margin-top:18px;padding:16px 18px;background:rgba(42,106,154,0.05);border-left:3px solid var(--accent-ela);border-radius:0 6px 6px 0;}
+  .think-about .label{font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent-ela);margin-bottom:6px;}
+  .think-about p{font-size:13px;line-height:1.7;color:#2a5070;margin:0;font-family:'Outfit',sans-serif;}
+  .panel-stats{margin-top:20px;border-top:1px solid rgba(0,0,0,0.05);padding-top:14px;}
+  .panel-stats .stats-title{font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--text-light);margin-bottom:10px;}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.03);}
+  .stat-label{font-size:12px;color:var(--text-light);letter-spacing:1px;}
+  .stat-value{font-family:'Crimson Pro',serif;font-size:16px;font-weight:600;color:var(--text-dark);}
+  .vocabulary{margin-top:18px;padding:16px 18px;background:rgba(42,138,90,0.04);border-radius:6px;}
+  .vocabulary .label{font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent-science);margin-bottom:8px;}
+  .vocab-word{margin-bottom:6px;}
+  .vocab-word strong{font-family:'Crimson Pro',serif;font-size:15px;color:var(--text-dark);}
+  .vocab-word span{font-size:12px;color:var(--text-light);display:block;margin-top:1px;}
+
+  .point-marker{position:absolute;pointer-events:auto;cursor:pointer;z-index:5;}
+  .marker-dot{width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(0,0,0,0.2),0 2px 8px rgba(0,0,0,0.2);animation:mp 3s ease-in-out infinite;position:relative;}
+  .marker-ring{position:absolute;top:-8px;left:-8px;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);animation:re 3s ease-in-out infinite;}
+  .marker-tooltip{position:absolute;left:34px;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 14px;background:rgba(12,16,30,0.9);border:1px solid rgba(138,196,255,0.2);border-radius:4px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8ac4ff;opacity:0;transition:opacity 0.3s,transform 0.3s;transform:translateY(-50%) translateX(5px);pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+  .point-marker:hover .marker-tooltip{opacity:1;transform:translateY(-50%) translateX(0);}
+  .point-marker:hover .marker-dot{transform:scale(1.3);transition:transform 0.3s;}
+  @keyframes mp{0%,100%{box-shadow:0 0 8px rgba(255,255,255,0.2),0 2px 6px rgba(0,0,0,0.15);}50%{box-shadow:0 0 20px rgba(255,255,255,0.35),0 2px 10px rgba(0,0,0,0.2);}}
+  @keyframes re{0%,100%{transform:scale(1);opacity:0.4;}50%{transform:scale(1.5);opacity:0;}}
+  .marker-nucleus .marker-dot{background:radial-gradient(circle,#6090ff,#3050c0);}
+  .marker-mito .marker-dot{background:radial-gradient(circle,#ff6a4a,#c04030);}
+  .marker-membrane .marker-dot{background:radial-gradient(circle,#50cc80,#2a8a50);}
+  .marker-ribo .marker-dot{background:radial-gradient(circle,#cc70e0,#8a40a0);}
+  .marker-plant .marker-dot{background:radial-gradient(circle,#80cc40,#4a8a20);}
+  @media(max-width:768px){.info-panel{width:100%;right:-100%;}.hud-subjects{display:none;}}
+</style>
+</head>
+<body>
+<div class="intro-screen" id="introScreen">
+  <div class="cell-icon">🔬</div>
+  <h1>Inside a Human Cell</h1>
+  <div class="tagline">The City Within · Interactive 3D Diorama</div>
+  <button class="enter-btn" id="enterBtn">Explore the Cell</button>
+</div>
+<div class="hud-top" id="hudTop" style="opacity:0;transition:opacity 1s;">
+  <div class="hud-title"><h1>Inside a Human Cell</h1><div class="sub">AC v9 · Year 8–9 Science · Biological Sciences</div></div>
+  <div class="hud-subjects"><div class="subject-pill active" data-subj="science">Science</div><div class="subject-pill active" data-subj="ela">ELA</div><div class="subject-pill active" data-subj="math">Math</div></div>
+</div>
+<div class="controls-hint" id="hint" style="opacity:0;transition:opacity 1s;">Drag to rotate · Scroll to zoom · Click markers or tabs to learn</div>
+<div class="hud-bottom" id="hudBottom" style="opacity:0;transition:opacity 1s;">
+  <div class="point-tab" data-point="0"><span class="tab-num">01</span>Nucleus</div>
+  <div class="point-tab" data-point="1"><span class="tab-num">02</span>Mitochondria</div>
+  <div class="point-tab" data-point="2"><span class="tab-num">03</span>Cell Membrane</div>
+  <div class="point-tab" data-point="3"><span class="tab-num">04</span>Ribosomes & ER</div>
+  <div class="point-tab" data-point="4"><span class="tab-num">05</span>Plant vs Animal</div>
+</div>
+<div class="info-panel" id="infoPanel"><div class="panel-header" id="panelHeader"></div><div class="panel-body" id="panelBody"></div></div>
+<div id="canvas-container" style="position:fixed;inset:0;z-index:1;"></div>
+<div id="markerLayer" style="position:fixed;inset:0;z-index:5;pointer-events:none;"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// === DATA (same content) ===
+const infoPoints=[{id:1,title:"The Nucleus",subtitle:'"City Hall"',acCode:"AC9S8U01",acDesc:"Cells are the basic units of living things; they have specialised structures and functions",subjects:["science","ela"],markerClass:"marker-nucleus",pos:{x:0,y:0.5,z:0},paragraphs:["If a cell were a city, the nucleus would be City Hall — the control centre where all the important decisions are made. The nucleus contains DNA (deoxyribonucleic acid), which is like a massive instruction manual with every recipe the cell needs to build proteins, grow, and divide.","Your DNA is incredibly long — if you uncoiled all the DNA from just one cell and stretched it out, it would be about 2 metres long. Yet it's packed into a nucleus that's only about 6 micrometres across. That's like fitting 40 kilometres of thread into a tennis ball. The nucleus is surrounded by a double membrane called the nuclear envelope, with tiny pores that control what enters and leaves — like security doors at City Hall."],thinkAbout:"The nucleus is often called the 'brain' of the cell, but is that metaphor accurate? A brain can learn and change its mind — can a nucleus? Write a paragraph arguing whether 'City Hall' or 'brain' is a better metaphor, and explain your reasoning using evidence about what the nucleus actually does.",stats:{"Diameter":"~6 micrometres","DNA per cell":"~2 metres long","Genes":"~20,000–25,000"},vocabulary:[{word:"DNA",def:"Deoxyribonucleic acid — the molecule that carries genetic instructions for life"},{word:"Nuclear envelope",def:"The double membrane surrounding the nucleus with pores for transport"},{word:"Chromosome",def:"A tightly coiled structure of DNA and protein found in the nucleus"}]},{id:2,title:"Mitochondria",subtitle:'"The Power Plant"',acCode:"AC9S8U01 / AC9S9U01",acDesc:"Specialised structures and functions; coordinated internal systems",subjects:["science","math"],markerClass:"marker-mito",pos:{x:6,y:-1,z:3},paragraphs:["Mitochondria are the power plants of the cell. They take in glucose (sugar from your food) and oxygen (from your lungs), and convert them into ATP — adenosine triphosphate — which is the energy currency every part of the cell uses to do its job. This process is called cellular respiration.","A single human cell can contain anywhere from a few hundred to several thousand mitochondria, depending on how much energy that cell needs. Muscle cells and heart cells are packed with them because they work constantly. Your body produces roughly its own weight in ATP every single day — about 40–70 kg — then recycles it. Mitochondria even have their own DNA, separate from the nucleus, which scientists believe is evidence that they were once independent organisms that merged with early cells billions of years ago."],thinkAbout:"Your body produces about 40–70 kg of ATP per day but your body only contains about 250 grams of ATP at any given moment. What does that tell you about how fast ATP is being used and recycled? If you could calculate the turnover rate, how many times is each ATP molecule recycled per day?",stats:{"Per cell":"1,000–2,000+","ATP produced daily":"~40–70 kg","Own DNA?":"Yes — 37 genes"},vocabulary:[{word:"ATP",def:"Adenosine triphosphate — the molecule cells use as their primary energy source"},{word:"Cellular respiration",def:"The process of converting glucose and oxygen into ATP energy"},{word:"Endosymbiosis",def:"The theory that mitochondria were once free-living organisms absorbed by early cells"}]},{id:3,title:"Cell Membrane",subtitle:'"Border Security"',acCode:"AC9S8U01",acDesc:"Cells have specialised structures and functions (elaboration: cell organelles including membrane)",subjects:["science","ela"],markerClass:"marker-membrane",pos:{x:-2,y:0,z:9},paragraphs:["The cell membrane is like a border checkpoint surrounding the entire cell. It's not a solid wall — it's a flexible, double-layered sheet made of special molecules called phospholipids. These molecules have a water-loving head and a water-fearing tail, and they arrange themselves into a sandwich that's just two molecules thick.","This membrane is 'selectively permeable,' meaning it chooses what gets in and what stays out. Small molecules like oxygen and water can slip through easily, but larger molecules need special protein channels — like having a VIP pass to get through security. This is how cells take in nutrients, release waste, and communicate with other cells. Without a functioning membrane, the cell would be like a city with no walls — everything would flood in and out with no control."],thinkAbout:"The cell membrane is described as 'selectively permeable' — it lets some things through and blocks others. Write an extended metaphor comparing the cell membrane to another real-world system that controls access (e.g., airport security, a school gate, a nightclub bouncer). How far does your metaphor hold up?",stats:{"Thickness":"~7–8 nanometres","Made of":"Phospholipid bilayer","Protein channels":"Thousands per cell"},vocabulary:[{word:"Phospholipid",def:"A molecule with a water-loving head and water-fearing tail that forms the cell membrane"},{word:"Selectively permeable",def:"Allowing only certain substances to pass through"},{word:"Osmosis",def:"The movement of water across a membrane from low to high solute concentration"}]},{id:4,title:"Ribosomes & ER",subtitle:'"Factories & Highways"',acCode:"AC9S8U01 / AC9S8U02",acDesc:"Specialised structures and functions; systems of organs carrying out specialised functions",subjects:["science","math","ela"],markerClass:"marker-ribo",pos:{x:-6,y:1,z:-3},paragraphs:["Ribosomes are the cell's tiny factories. They read instructions from the nucleus (delivered as messenger RNA) and use those instructions to build proteins — the molecules that do almost everything in your body, from building muscle to fighting infection. A single cell can contain millions of ribosomes, each one assembling proteins at a rate of about 200 amino acids per minute.","Many ribosomes are attached to the endoplasmic reticulum (ER) — a vast network of folded membranes that acts as the cell's highway system. The 'rough ER' is studded with ribosomes and processes newly made proteins. The 'smooth ER' has no ribosomes and handles other jobs like making fats and breaking down toxins. If you flattened out all the ER in a single liver cell, it would cover an area the size of about one or two standard pillows."],thinkAbout:"If a ribosome builds proteins at 200 amino acids per minute, and a typical protein contains 300 amino acids, how long does it take to build one protein? If a cell has 10 million ribosomes all working at once, how many proteins could theoretically be built per hour? Show your working.",stats:{"Ribosomes per cell":"Up to 10 million","Build speed":"~200 amino acids/min","ER surface area":"~30× the cell membrane"},vocabulary:[{word:"Ribosome",def:"A tiny structure that reads RNA instructions to build proteins"},{word:"Endoplasmic reticulum",def:"A network of folded membranes that transports materials through the cell"},{word:"Protein synthesis",def:"The process of building proteins from amino acid building blocks"}]},{id:5,title:"Plant vs Animal Cells",subtitle:'"Two Different Cities"',acCode:"AC9S8U01",acDesc:"Elaboration: comparing plant and animal cells; representing cells using physical or digital models",subjects:["science","ela"],markerClass:"marker-plant",pos:{x:3,y:-0.5,z:-7},paragraphs:["Animal cells and plant cells share most of the same organelles — both have a nucleus, mitochondria, ribosomes, and a cell membrane. But plant cells have three key extras. First, a rigid cell wall made of cellulose that sits outside the membrane, giving the plant structure (this is why plants can stand upright without a skeleton). Second, chloroplasts — green organelles that perform photosynthesis, converting sunlight into glucose energy.","Third, plant cells typically have a large central vacuole — a massive fluid-filled sac that can take up 80–90% of the cell's volume. It stores water and nutrients, and when it's full, it pushes outward against the cell wall, keeping the plant firm and upright (called turgor pressure). This is why plants wilt when they don't get enough water — the vacuoles deflate. The model you're exploring right now is an animal cell, but imagine adding walls, solar panels, and a giant water tank to visualise a plant cell."],thinkAbout:"If an animal cell is a city, and a plant cell is also a city, what kind of cities are they? Write a comparison: what type of city would an animal cell be (bustling? flexible? mobile?) vs a plant cell (walled? self-sustaining? rooted?). Use specific organelle functions as evidence for your descriptions.",stats:{"Cell wall material":"Cellulose","Vacuole size":"Up to 90% of cell","Chloroplasts per cell":"~40–50"},vocabulary:[{word:"Chloroplast",def:"An organelle in plant cells that converts sunlight into glucose through photosynthesis"},{word:"Cell wall",def:"A rigid outer layer in plant cells made of cellulose for structural support"},{word:"Turgor pressure",def:"The pressure of water inside the vacuole pushing against the cell wall, keeping plants firm"}]}];
+
+// === THREE.JS ENHANCED SCENE ===
+const container=document.getElementById('canvas-container');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x080e20);
+
+const camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.0;
+container.appendChild(renderer.domElement);
+
+// Atmospheric lights
+const ambient=new THREE.AmbientLight(0x1a2a50,0.6);scene.add(ambient);
+const keyLight=new THREE.DirectionalLight(0x6090cc,0.7);keyLight.position.set(15,20,10);scene.add(keyLight);
+const fillBlue=new THREE.PointLight(0x4080ff,0.6,40);fillBlue.position.set(-12,5,-8);scene.add(fillBlue);
+const fillPink=new THREE.PointLight(0xff6090,0.4,35);fillPink.position.set(8,-4,-6);scene.add(fillPink);
+const fillGreen=new THREE.PointLight(0x40ff90,0.3,30);fillGreen.position.set(-5,-5,10);scene.add(fillGreen);
+const coreGlow=new THREE.PointLight(0x4060ff,0.8,18);coreGlow.position.set(0,0,0);scene.add(coreGlow);
+
+// Helper: organic deform
+function organicDeform(geo, amplitude, freq) {
+  const p=geo.attributes.position;
+  for(let i=0;i<p.count;i++){
+    const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+    const r=Math.sqrt(x*x+y*y+z*z);
+    const n=1+Math.sin(x*freq)*amplitude+Math.cos(y*freq*1.3)*amplitude*0.7+Math.sin(z*freq*0.8)*amplitude*0.5+Math.sin(x*freq*2.5+y*freq*1.8)*amplitude*0.3;
+    p.setXYZ(i,x*n,y*n,z*n);
+  }
+  geo.computeVertexNormals();
+}
+
+// === CELL MEMBRANE — multi-layer translucent shell ===
+// Outer membrane
+const memOuter=new THREE.SphereGeometry(11,96,64);
+organicDeform(memOuter,0.04,0.7);
+const memOuterMesh=new THREE.Mesh(memOuter,new THREE.MeshPhysicalMaterial({
+  color:0x40a888,roughness:0.05,metalness:0,transparent:true,opacity:0.1,
+  side:THREE.DoubleSide,clearcoat:1.0,clearcoatRoughness:0.1,
+  envMapIntensity:0.5
+}));
+scene.add(memOuterMesh);
+
+// Inner membrane glow
+const memInner=new THREE.SphereGeometry(10.5,64,48);
+organicDeform(memInner,0.03,0.9);
+const memInnerMesh=new THREE.Mesh(memInner,new THREE.MeshPhysicalMaterial({
+  color:0x60c8b0,roughness:0.1,transparent:true,opacity:0.05,side:THREE.BackSide,
+}));
+scene.add(memInnerMesh);
+
+// Phospholipid texture effect — bumpy shell
+const memBumps=new THREE.SphereGeometry(10.7,128,80);
+organicDeform(memBumps,0.015,3.5);
+const memBumpsMesh=new THREE.Mesh(memBumps,new THREE.MeshPhysicalMaterial({
+  color:0x50b898,roughness:0.2,transparent:true,opacity:0.06,side:THREE.DoubleSide,wireframe:false,
+}));
+scene.add(memBumpsMesh);
+
+// === CYTOPLASM — volumetric fog-like interior ===
+for(let layer=0;layer<4;layer++){
+  const r=9-layer*2;
+  const cytoGeo=new THREE.SphereGeometry(r,24,16);
+  organicDeform(cytoGeo,0.05,0.5+layer*0.2);
+  const cyto=new THREE.Mesh(cytoGeo,new THREE.MeshStandardMaterial({
+    color:new THREE.Color().setHSL(0.45+layer*0.02,0.15,0.2+layer*0.03),
+    roughness:0.8,transparent:true,opacity:0.025,side:THREE.DoubleSide
+  }));
+  scene.add(cyto);
+}
+
+// === NUCLEUS — complex layered sphere with chromatin ===
+const nucleusGroup=new THREE.Group();
+// Outer nuclear envelope
+const nuclEnvGeo=new THREE.SphereGeometry(3.2,48,32);
+organicDeform(nuclEnvGeo,0.03,1.2);
+const nuclEnv=new THREE.Mesh(nuclEnvGeo,new THREE.MeshPhysicalMaterial({
+  color:0x3050aa,roughness:0.1,metalness:0.05,transparent:true,opacity:0.5,
+  clearcoat:1.0,clearcoatRoughness:0.05
+}));
+nucleusGroup.add(nuclEnv);
+
+// Inner nucleoplasm
+const nuclPlasm=new THREE.Mesh(
+  new THREE.SphereGeometry(2.9,32,24),
+  new THREE.MeshStandardMaterial({color:0x2840a0,roughness:0.4,transparent:true,opacity:0.35})
+);
+nucleusGroup.add(nuclPlasm);
+
+// Nucleolus (dense body)
+const nucleolusGeo=new THREE.SphereGeometry(0.9,20,14);
+organicDeform(nucleolusGeo,0.06,2);
+const nucleolus=new THREE.Mesh(nucleolusGeo,new THREE.MeshStandardMaterial({color:0x1a2870,roughness:0.25,metalness:0.1}));
+nucleolus.position.set(0.4,0.6,0.2);
+nucleusGroup.add(nucleolus);
+
+// Nuclear pores (tiny rings on surface)
+for(let i=0;i<30;i++){
+  const phi=Math.acos(2*Math.random()-1);
+  const theta=Math.random()*Math.PI*2;
+  const r=3.2;
+  const pore=new THREE.Mesh(
+    new THREE.TorusGeometry(0.12,0.04,6,8),
+    new THREE.MeshStandardMaterial({color:0x5070cc,roughness:0.3,metalness:0.3})
+  );
+  pore.position.set(r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi));
+  pore.lookAt(0,0,0);
+  nucleusGroup.add(pore);
+}
+
+// DNA double helix (more detailed)
+function createHelix(offset,color1,color2,turns,radius){
+  const strandPts1=[],strandPts2=[];
+  for(let t=0;t<Math.PI*2*turns;t+=0.08){
+    const y=t*0.22-turns*0.22*Math.PI;
+    strandPts1.push(new THREE.Vector3(Math.cos(t)*radius+offset.x,y+offset.y,Math.sin(t)*radius+offset.z));
+    strandPts2.push(new THREE.Vector3(Math.cos(t+Math.PI)*radius+offset.x,y+offset.y,Math.sin(t+Math.PI)*radius+offset.z));
+  }
+  [strandPts1,strandPts2].forEach((pts,idx)=>{
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const geo=new THREE.TubeGeometry(curve,pts.length*2,0.04,6,false);
+    const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:idx===0?color1:color2,roughness:0.3,metalness:0.15,emissive:idx===0?color1:color2,emissiveIntensity:0.1}));
+    nucleusGroup.add(mesh);
+  });
+  // Rungs between strands
+  for(let t=0;t<Math.PI*2*turns;t+=0.5){
+    const y=t*0.22-turns*0.22*Math.PI;
+    const p1=new THREE.Vector3(Math.cos(t)*radius+offset.x,y+offset.y,Math.sin(t)*radius+offset.z);
+    const p2=new THREE.Vector3(Math.cos(t+Math.PI)*radius+offset.x,y+offset.y,Math.sin(t+Math.PI)*radius+offset.z);
+    const mid=p1.clone().lerp(p2,0.5);
+    const len=p1.distanceTo(p2);
+    const rung=new THREE.Mesh(
+      new THREE.CylinderGeometry(0.02,0.02,len,4),
+      new THREE.MeshStandardMaterial({color:0x8090dd,roughness:0.4,emissive:0x4050aa,emissiveIntensity:0.05})
+    );
+    rung.position.copy(mid);
+    rung.lookAt(p2);
+    rung.rotateX(Math.PI/2);
+    nucleusGroup.add(rung);
+  }
+}
+createHelix({x:-0.3,y:0,z:0},0x5580ee,0x8060dd,3,1.2);
+createHelix({x:0.8,y:0.3,z:-0.5},0x6090cc,0x9070bb,2,0.8);
+
+nucleusGroup.position.set(0,0.5,0);
+scene.add(nucleusGroup);
+
+// === MITOCHONDRIA — bean-shaped with visible cristae folds ===
+function createMito(pos,rot,sc){
+  const g=new THREE.Group();
+  // Outer membrane — elongated organic sphere
+  const outerGeo=new THREE.SphereGeometry(1,32,20);
+  outerGeo.scale(2,0.85,1);
+  organicDeform(outerGeo,0.04,1.5);
+  const outer=new THREE.Mesh(outerGeo,new THREE.MeshPhysicalMaterial({
+    color:0xdd4422,roughness:0.15,metalness:0.05,transparent:true,opacity:0.7,
+    clearcoat:0.6,clearcoatRoughness:0.15
+  }));
+  outer.castShadow=true;g.add(outer);
+  // Inner membrane with cristae folds
+  const innerGeo=new THREE.SphereGeometry(0.85,24,16);
+  innerGeo.scale(1.7,0.7,0.85);
+  organicDeform(innerGeo,0.06,2.5);
+  const inner=new THREE.Mesh(innerGeo,new THREE.MeshStandardMaterial({
+    color:0xcc3318,roughness:0.3,transparent:true,opacity:0.5
+  }));
+  g.add(inner);
+  // Cristae (wavy folded sheets)
+  for(let c=0;c<7;c++){
+    const cristaGeo=new THREE.PlaneGeometry(0.6,0.5,6,4);
+    const cp=cristaGeo.attributes.position;
+    for(let j=0;j<cp.count;j++){
+      cp.setZ(j,Math.sin(cp.getX(j)*5)*0.08+Math.cos(cp.getY(j)*4)*0.06);
+    }
+    cristaGeo.computeVertexNormals();
+    const crista=new THREE.Mesh(cristaGeo,new THREE.MeshStandardMaterial({
+      color:0xaa2210,roughness:0.3,side:THREE.DoubleSide,transparent:true,opacity:0.6
+    }));
+    crista.position.set(-1.2+c*0.35,(Math.random()-0.5)*0.3,(Math.random()-0.5)*0.2);
+    crista.rotation.set(Math.random()*0.4,(Math.random()-0.5)*0.3,Math.random()*0.2);
+    g.add(crista);
+  }
+  // Matrix glow
+  const matrixGlow=new THREE.Mesh(
+    new THREE.SphereGeometry(0.6,12,8).scale(1.5,0.6,0.8),
+    new THREE.MeshStandardMaterial({color:0xff6644,roughness:0.5,transparent:true,opacity:0.15,emissive:0xff4422,emissiveIntensity:0.2})
+  );
+  g.add(matrixGlow);
+  g.position.copy(pos);g.rotation.set(rot.x||0,rot.y||0,rot.z||0);g.scale.setScalar(sc);
+  scene.add(g);
+  return g;
+}
+const mitos=[];
+mitos.push(createMito(new THREE.Vector3(6,-1,3),{y:0.5},1));
+mitos.push(createMito(new THREE.Vector3(4.5,2.5,-4),{y:-0.8,z:0.3},0.85));
+mitos.push(createMito(new THREE.Vector3(-6.5,-2,2.5),{y:1.2},0.95));
+mitos.push(createMito(new THREE.Vector3(-3.5,3.5,-5),{y:2.1,x:0.2},0.75));
+mitos.push(createMito(new THREE.Vector3(6.5,0.5,-2.5),{y:-0.3,z:-0.2},0.9));
+mitos.push(createMito(new THREE.Vector3(-1,-4,6),{y:0.8},0.7));
+mitos.push(createMito(new THREE.Vector3(2,4,5),{y:1.8,x:-0.1},0.65));
+
+// === ENDOPLASMIC RETICULUM — flowing folded sheets ===
+const erMat=new THREE.MeshPhysicalMaterial({
+  color:0x9a70cc,roughness:0.1,transparent:true,opacity:0.35,side:THREE.DoubleSide,clearcoat:0.4
+});
+const erSheets=[];
+for(let i=0;i<14;i++){
+  const angle=(i/14)*Math.PI*2;
+  const r=4.2+Math.sin(i*1.3)*0.8;
+  const w=2+Math.random()*1.5,h=1.2+Math.random()*0.8;
+  const geo=new THREE.PlaneGeometry(w,h,12,8);
+  const p=geo.attributes.position;
+  for(let j=0;j<p.count;j++){
+    p.setZ(j,Math.sin(p.getX(j)*2.5)*0.25+Math.cos(p.getY(j)*3)*0.18+Math.sin(p.getX(j)*5)*0.08);
+  }
+  geo.computeVertexNormals();
+  const mesh=new THREE.Mesh(geo,erMat);
+  mesh.position.set(Math.cos(angle)*r,(Math.random()-0.5)*4,Math.sin(angle)*r);
+  mesh.rotation.set(Math.random()*0.4,angle+Math.PI/2+Math.random()*0.3,Math.random()*0.2);
+  scene.add(mesh);
+  erSheets.push(mesh);
+}
+
+// Ribosomes on ER (lots of tiny glowing spheres)
+const riboOnER=[];
+const riboMat=new THREE.MeshStandardMaterial({color:0x8050b0,roughness:0.2,emissive:0x6030a0,emissiveIntensity:0.15});
+for(let i=0;i<120;i++){
+  const angle=Math.random()*Math.PI*2;
+  const r=3.5+Math.random()*2.5;
+  const ribo=new THREE.Mesh(new THREE.SphereGeometry(0.1+Math.random()*0.04,8,6),riboMat);
+  ribo.position.set(Math.cos(angle)*r+(Math.random()-0.5)*0.8,(Math.random()-0.5)*4.5,Math.sin(angle)*r+(Math.random()-0.5)*0.8);
+  scene.add(ribo);
+  riboOnER.push(ribo);
+}
+
+// Free ribosomes (scattered)
+for(let i=0;i<80;i++){
+  const r=2+Math.random()*7;const a=Math.random()*Math.PI*2;
+  const ribo=new THREE.Mesh(new THREE.SphereGeometry(0.07+Math.random()*0.03,6,4),
+    new THREE.MeshStandardMaterial({color:0x9060c0,roughness:0.3,emissive:0x7040a0,emissiveIntensity:0.08}));
+  ribo.position.set(Math.cos(a)*r,(Math.random()-0.5)*7,Math.sin(a)*r);
+  scene.add(ribo);
+}
+
+// === GOLGI APPARATUS — stacked curved discs with budding vesicles ===
+function createGolgi(pos,rot){
+  const g=new THREE.Group();
+  const golgiMat=new THREE.MeshPhysicalMaterial({color:0xddaa30,roughness:0.15,transparent:true,opacity:0.55,clearcoat:0.6});
+  for(let i=0;i<6;i++){
+    const discGeo=new THREE.CylinderGeometry(1.4-i*0.03,1.4-i*0.03,0.08,32);
+    // Curve the disc
+    const dp=discGeo.attributes.position;
+    for(let j=0;j<dp.count;j++){
+      const x=dp.getX(j),z=dp.getZ(j);
+      dp.setY(j,dp.getY(j)+Math.sin(x*1.2)*0.15+Math.cos(z*1.5)*0.1);
+    }
+    discGeo.computeVertexNormals();
+    const disc=new THREE.Mesh(discGeo,golgiMat);
+    disc.position.y=i*0.28-0.7;
+    disc.rotation.x=0.08*Math.sin(i);
+    g.add(disc);
+  }
+  // Vesicles
+  for(let v=0;v<8;v++){
+    const a=v*Math.PI/4+Math.random()*0.3;
+    const vesicle=new THREE.Mesh(
+      new THREE.SphereGeometry(0.15+Math.random()*0.1,10,8),
+      new THREE.MeshPhysicalMaterial({color:0xeebb40,roughness:0.2,clearcoat:0.8,transparent:true,opacity:0.7})
+    );
+    vesicle.position.set(Math.cos(a)*(1.6+Math.random()*0.5),(Math.random()-0.5)*1,Math.sin(a)*(1.6+Math.random()*0.5));
+    g.add(vesicle);
+  }
+  g.position.copy(pos);g.rotation.y=rot||0;
+  scene.add(g);return g;
+}
+createGolgi(new THREE.Vector3(-5.5,1,-3.5),0.5);
+createGolgi(new THREE.Vector3(4,-3,-5),-0.8);
+
+// === LYSOSOMES (glowing green spheres) ===
+for(let i=0;i<12;i++){
+  const r=5+Math.random()*3.5;const a=Math.random()*Math.PI*2;
+  const geo=new THREE.SphereGeometry(0.3+Math.random()*0.15,12,10);
+  organicDeform(geo,0.08,3);
+  const lyso=new THREE.Mesh(geo,new THREE.MeshPhysicalMaterial({
+    color:0x40bb60,roughness:0.15,clearcoat:0.8,transparent:true,opacity:0.65,
+    emissive:0x20aa40,emissiveIntensity:0.15
+  }));
+  lyso.position.set(Math.cos(a)*r,(Math.random()-0.5)*5,Math.sin(a)*r);
+  scene.add(lyso);
+}
+
+// === VACUOLES ===
+for(let i=0;i<5;i++){
+  const r=4+Math.random()*4;const a=Math.random()*Math.PI*2;
+  const geo=new THREE.SphereGeometry(0.5+Math.random()*0.4,20,14);
+  organicDeform(geo,0.06,2);
+  const vac=new THREE.Mesh(geo,new THREE.MeshPhysicalMaterial({
+    color:0x60c8e8,roughness:0.05,transparent:true,opacity:0.2,clearcoat:1.0,clearcoatRoughness:0.05
+  }));
+  vac.position.set(Math.cos(a)*r,(Math.random()-0.5)*4,Math.sin(a)*r);
+  scene.add(vac);
+}
+
+// === PLANT CELL COMPARISON ===
+const plantGroup=new THREE.Group();
+const plantWall=new THREE.Mesh(new THREE.BoxGeometry(4.5,3.5,3.5),new THREE.MeshPhysicalMaterial({color:0x50aa30,roughness:0.3,transparent:true,opacity:0.12,side:THREE.DoubleSide}));
+plantGroup.add(plantWall);
+const plantEdge=new THREE.Mesh(new THREE.BoxGeometry(4.5,3.5,3.5),new THREE.MeshBasicMaterial({color:0x60cc40,wireframe:true,transparent:true,opacity:0.25}));
+plantGroup.add(plantEdge);
+for(let c=0;c<6;c++){
+  const chGeo=new THREE.SphereGeometry(0.28,10,8);chGeo.scale(1.6,1,1);
+  const chloro=new THREE.Mesh(chGeo,new THREE.MeshPhysicalMaterial({color:0x30cc20,roughness:0.2,clearcoat:0.5,emissive:0x20aa10,emissiveIntensity:0.1}));
+  chloro.position.set((Math.random()-0.5)*3,(Math.random()-0.5)*2,(Math.random()-0.5)*2);
+  chloro.rotation.set(Math.random(),Math.random(),0);
+  plantGroup.add(chloro);
+}
+const bigVac=new THREE.Mesh(
+  new THREE.SphereGeometry(1.1,20,14),
+  new THREE.MeshPhysicalMaterial({color:0x60c8e0,roughness:0.05,transparent:true,opacity:0.2,clearcoat:1.0})
+);
+plantGroup.add(bigVac);
+plantGroup.position.set(3,-0.5,-7);
+scene.add(plantGroup);
+
+// === PROTEIN TRANSPORT PARTICLES ===
+const transportCount=500;
+const tGeo=new THREE.BufferGeometry();
+const tPos=new Float32Array(transportCount*3);
+const tColors=new Float32Array(transportCount*3);
+for(let i=0;i<transportCount;i++){
+  const r=Math.random()*10;const a=Math.random()*Math.PI*2;const y=(Math.random()-0.5)*16;
+  tPos[i*3]=Math.cos(a)*r;tPos[i*3+1]=y;tPos[i*3+2]=Math.sin(a)*r;
+  const hue=0.5+Math.random()*0.3;
+  const c=new THREE.Color().setHSL(hue,0.3,0.5);
+  tColors[i*3]=c.r;tColors[i*3+1]=c.g;tColors[i*3+2]=c.b;
+}
+tGeo.setAttribute('position',new THREE.BufferAttribute(tPos,3));
+tGeo.setAttribute('color',new THREE.BufferAttribute(tColors,3));
+const particles=new THREE.Points(tGeo,new THREE.PointsMaterial({
+  size:0.06,transparent:true,opacity:0.5,sizeAttenuation:true,vertexColors:true
+}));
+scene.add(particles);
+
+// Background glow spheres (ambient atmosphere)
+for(let i=0;i<6;i++){
+  const bg=new THREE.Mesh(
+    new THREE.SphereGeometry(15+i*3,16,12),
+    new THREE.MeshBasicMaterial({color:new THREE.Color().setHSL(0.55+i*0.03,0.15,0.04),transparent:true,opacity:0.03,side:THREE.BackSide})
+  );
+  scene.add(bg);
+}
+
+// === CAMERA ===
+let isDrag=false,prev={x:0,y:0};
+let sph={theta:Math.PI/4,phi:Math.PI/2.8,radius:26};
+function updateCam(){
+  camera.position.set(sph.radius*Math.sin(sph.phi)*Math.sin(sph.theta),sph.radius*Math.cos(sph.phi),sph.radius*Math.sin(sph.phi)*Math.cos(sph.theta));
+  camera.lookAt(0,0,0);
+}
+updateCam();
+renderer.domElement.addEventListener('mousedown',e=>{isDrag=true;prev={x:e.clientX,y:e.clientY};});
+renderer.domElement.addEventListener('mousemove',e=>{if(!isDrag)return;sph.theta-=(e.clientX-prev.x)*0.005;sph.phi=Math.max(0.25,Math.min(Math.PI/2,sph.phi+(e.clientY-prev.y)*0.005));prev={x:e.clientX,y:e.clientY};updateCam();});
+renderer.domElement.addEventListener('mouseup',()=>isDrag=false);
+renderer.domElement.addEventListener('mouseleave',()=>isDrag=false);
+renderer.domElement.addEventListener('wheel',e=>{sph.radius=Math.max(10,Math.min(45,sph.radius+e.deltaY*0.025));updateCam();});
+renderer.domElement.addEventListener('touchstart',e=>{if(e.touches.length===1){isDrag=true;prev={x:e.touches[0].clientX,y:e.touches[0].clientY};}});
+renderer.domElement.addEventListener('touchmove',e=>{if(!isDrag||e.touches.length!==1)return;e.preventDefault();sph.theta-=(e.touches[0].clientX-prev.x)*0.005;sph.phi=Math.max(0.25,Math.min(Math.PI/2,sph.phi+(e.touches[0].clientY-prev.y)*0.005));prev={x:e.touches[0].clientX,y:e.touches[0].clientY};updateCam();},{passive:false});
+renderer.domElement.addEventListener('touchend',()=>isDrag=false);
+
+// === MARKERS ===
+const markerLayer=document.getElementById('markerLayer');
+const markerEls=infoPoints.map(pt=>{const el=document.createElement('div');el.className=`point-marker ${pt.markerClass}`;el.innerHTML=`<div class="marker-dot"><div class="marker-ring"></div></div><div class="marker-tooltip">${pt.title}</div>`;el.addEventListener('click',()=>openPanel(pt));markerLayer.appendChild(el);return{el,pt};});
+function updateMarkers(){markerEls.forEach(({el,pt})=>{const v=new THREE.Vector3(pt.pos.x,pt.pos.y,pt.pos.z).project(camera);if(v.z>1){el.style.display='none';return;}el.style.display='block';el.style.transform=`translate(${(v.x*0.5+0.5)*window.innerWidth-11}px,${(-v.y*0.5+0.5)*window.innerHeight-11}px)`;});}
+
+// === PANEL ===
+function openPanel(pt){
+  const subjs=pt.subjects.map(s=>{const l={science:'Science',math:'Maths',ela:'ELA'};return`<span class="panel-subj-tag ${s}">${l[s]}</span>`;}).join('');
+  document.getElementById('panelHeader').innerHTML=`<button class="panel-close" onclick="closeInfoPanel()">✕</button><div class="panel-number">0${pt.id}</div><h2>${pt.title}</h2><div class="panel-subtitle">${pt.subtitle}</div><div class="panel-curriculum"><code>${pt.acCode}</code><span>— ${pt.acDesc}</span></div><div class="panel-subjects">${subjs}</div>`;
+  const paras=pt.paragraphs.map(p=>`<p>${p}</p>`).join('');
+  const stats=Object.entries(pt.stats).map(([k,v])=>`<div class="stat-row"><span class="stat-label">${k}</span><span class="stat-value">${v}</span></div>`).join('');
+  const vocab=pt.vocabulary.map(v=>`<div class="vocab-word"><strong>${v.word}</strong><span>${v.def}</span></div>`).join('');
+  document.getElementById('panelBody').innerHTML=`${paras}<div class="think-about"><div class="label">✏ Think &amp; Write About It</div><p>${pt.thinkAbout}</p></div><div class="panel-stats"><div class="stats-title">By the Numbers</div>${stats}</div><div class="vocabulary"><div class="label">🔬 Key Vocabulary</div>${vocab}</div>`;
+  document.getElementById('infoPanel').classList.add('active');
+  document.querySelectorAll('.point-tab').forEach(t=>t.classList.remove('active'));
+  const tab=document.querySelector(`.point-tab[data-point="${pt.id-1}"]`);if(tab)tab.classList.add('active');
+}
+function closeInfoPanel(){document.getElementById('infoPanel').classList.remove('active');document.querySelectorAll('.point-tab').forEach(t=>t.classList.remove('active'));}
+document.querySelectorAll('.point-tab').forEach(tab=>{tab.addEventListener('click',()=>openPanel(infoPoints[parseInt(tab.dataset.point)]));});
+
+// === INTRO ===
+document.getElementById('enterBtn').addEventListener('click',()=>{document.getElementById('introScreen').classList.add('fade-out');setTimeout(()=>{document.getElementById('introScreen').style.display='none';document.getElementById('hudTop').style.opacity='1';document.getElementById('hudBottom').style.opacity='1';document.getElementById('hint').style.opacity='1';},600);});
+
+// === ANIMATION ===
+let time=0;
+function animate(){
+  requestAnimationFrame(animate);
+  time+=0.006;
+
+  // Membrane breathing
+  const breathe=1+Math.sin(time*0.4)*0.012;
+  memOuterMesh.scale.setScalar(breathe);
+  memInnerMesh.scale.setScalar(breathe*0.995);
+  memBumpsMesh.scale.setScalar(breathe*0.998);
+  memOuterMesh.rotation.y=time*0.02;
+  memBumpsMesh.rotation.y=-time*0.015;
+
+  // Nucleus float and rotate
+  nucleusGroup.position.y=0.5+Math.sin(time*0.25)*0.2;
+  nucleusGroup.rotation.y=time*0.05;
+  nucleusGroup.rotation.x=Math.sin(time*0.15)*0.03;
+
+  // Mitochondria gentle drift
+  mitos.forEach((m,i)=>{
+    m.position.y+=Math.sin(time*0.3+i*1.5)*0.003;
+    m.position.x+=Math.cos(time*0.2+i*2)*0.002;
+    m.rotation.z=Math.sin(time*0.2+i)*0.02;
+  });
+
+  // ER sheets gentle wave
+  erSheets.forEach((s,i)=>{
+    s.rotation.z=Math.sin(time*0.3+i*0.5)*0.03;
+    s.position.y+=Math.sin(time*0.2+i)*0.001;
+  });
+
+  // Plant group bob
+  plantGroup.rotation.y=Math.sin(time*0.15)*0.05;
+
+  // Particle Brownian motion
+  const pp=particles.geometry.attributes.position;
+  for(let i=0;i<pp.count;i++){
+    let x=pp.getX(i),y=pp.getY(i),z=pp.getZ(i);
+    x+=Math.sin(time*0.8+i*0.13)*0.004;
+    y+=Math.cos(time*0.6+i*0.09)*0.003;
+    z+=Math.sin(time*0.5+i*0.11)*0.004;
+    pp.setXYZ(i,x,y,z);
+  }
+  pp.needsUpdate=true;
+
+  // Light animation
+  coreGlow.intensity=0.7+Math.sin(time*0.8)*0.15;
+  fillBlue.position.x=-12+Math.sin(time*0.3)*3;
+  fillPink.position.z=-6+Math.cos(time*0.25)*3;
+
+  updateMarkers();
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+</script>
+</body>
+</html>

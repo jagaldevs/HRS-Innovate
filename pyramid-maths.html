@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Great Pyramid of Giza — Interactive 3D Maths Diorama</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Outfit:wght@200;300;400;500;600&display=swap');
+
+  :root {
+    --sand: #d4b878;
+    --sand-light: #e8d8a8;
+    --gold-dark: #8a6a28;
+    --sky: #5a9ad8;
+    --panel-bg: rgba(255,252,248,0.97);
+    --text-dark: #1a1a2e;
+    --text-mid: #3a3a50;
+    --text-light: #6a6a80;
+    --accent-math: #7a4a9a;
+    --accent-science: #2a8a5a;
+    --accent-history: #a05030;
+    --accent-ela: #2a6a9a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1408; color: #e8e0d0; font-family: 'Outfit', sans-serif;
+    overflow: hidden; height: 100vh; width: 100vw; cursor: grab;
+  }
+  body:active { cursor: grabbing; }
+  canvas { display: block; }
+
+  /* INTRO */
+  .intro-screen {
+    position: fixed; inset: 0; z-index: 200;
+    background: linear-gradient(135deg, #1a1408, #2a2010);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 1.5s ease;
+  }
+  .intro-screen.fade-out { opacity: 0; pointer-events: none; }
+  .intro-screen .icon {
+    font-size: 72px; opacity: 0; animation: introFade 1.5s ease forwards 0.3s;
+  }
+  .intro-screen h1 {
+    font-family: 'Crimson Pro', serif; font-size: 42px; font-weight: 700;
+    color: var(--sand); margin-top: 16px; letter-spacing: 1px;
+    opacity: 0; animation: introFade 1.5s ease forwards 0.6s;
+  }
+  .intro-screen .tagline {
+    font-size: 13px; letter-spacing: 6px; text-transform: uppercase;
+    color: rgba(212,184,120,0.4); margin-top: 8px;
+    opacity: 0; animation: introFade 1.5s ease forwards 1s;
+  }
+  .intro-screen .enter-btn {
+    margin-top: 36px; padding: 14px 40px; background: none;
+    border: 1px solid rgba(212,184,120,0.3); color: var(--sand);
+    font-family: 'Outfit', sans-serif; font-size: 13px; letter-spacing: 5px;
+    text-transform: uppercase; cursor: pointer; border-radius: 4px;
+    opacity: 0; animation: introFade 1.5s ease forwards 1.4s; transition: all 0.4s;
+  }
+  .intro-screen .enter-btn:hover { background: rgba(212,184,120,0.1); border-color: var(--sand); }
+  @keyframes introFade { to { opacity: 1; } }
+
+  /* HUD */
+  .hud-top {
+    position: fixed; top: 0; left: 0; right: 0; height: 80px;
+    background: linear-gradient(to bottom, rgba(80,140,200,0.5), transparent);
+    z-index: 10; pointer-events: none;
+    display: flex; align-items: flex-start; justify-content: space-between; padding: 18px 28px;
+  }
+  .hud-title h1 {
+    font-family: 'Crimson Pro', serif; font-size: 22px; font-weight: 700;
+    color: #fff; letter-spacing: 2px; text-transform: uppercase;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+  .hud-title .sub {
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); margin-top: 2px;
+  }
+  .hud-subjects { display: flex; gap: 8px; pointer-events: auto; }
+  .subject-pill {
+    padding: 4px 12px; border-radius: 16px; font-size: 9px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7); cursor: default;
+  }
+
+  .hud-bottom {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+    background: linear-gradient(to top, rgba(60,50,30,0.7), transparent);
+    z-index: 10; display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 16px; gap: 5px;
+  }
+  .point-tab {
+    padding: 7px 14px; background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+    font-size: 10px; letter-spacing: 1.5px; color: rgba(255,255,255,0.6);
+    cursor: pointer; transition: all 0.35s; text-transform: uppercase; white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .point-tab:hover, .point-tab.active {
+    background: rgba(255,255,255,0.25); border-color: #fff; color: #fff; transform: translateY(-2px);
+  }
+  .point-tab .tab-num { font-family: 'Crimson Pro', serif; font-weight: 700; font-size: 13px; margin-right: 5px; }
+  .controls-hint {
+    position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%);
+    z-index: 10; font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); pointer-events: none;
+  }
+
+  /* PANEL */
+  .info-panel {
+    position: fixed; right: -460px; top: 0; width: 440px; height: 100vh;
+    background: var(--panel-bg); border-left: 1px solid rgba(0,0,0,0.06);
+    z-index: 50; transition: right 0.6s cubic-bezier(0.22,1,0.36,1);
+    backdrop-filter: blur(30px); box-shadow: -30px 0 80px rgba(0,0,0,0.15);
+    overflow-y: auto; overflow-x: hidden;
+  }
+  .info-panel.active { right: 0; }
+  .panel-header {
+    position: relative; padding: 48px 34px 26px;
+    background: linear-gradient(135deg, rgba(122,74,154,0.05), transparent);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .panel-close {
+    position: absolute; top: 16px; right: 16px; width: 34px; height: 34px;
+    background: none; border: 1px solid rgba(0,0,0,0.1); color: #888;
+    font-size: 15px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; border-radius: 50%; transition: all 0.3s;
+  }
+  .panel-close:hover { border-color: #333; color: #333; }
+  .panel-number {
+    font-family: 'Crimson Pro', serif; font-size: 68px; font-weight: 700;
+    color: rgba(0,0,0,0.04); line-height: 1; position: absolute; top: 18px; left: 34px;
+  }
+  .panel-header h2 {
+    font-family: 'Crimson Pro', serif; font-size: 24px; font-weight: 600;
+    color: var(--text-dark); line-height: 1.2; position: relative; z-index: 1;
+  }
+  .panel-header .panel-subtitle {
+    font-size: 14px; color: var(--text-light); margin-top: 4px;
+    font-family: 'Crimson Pro', serif; font-style: italic;
+  }
+  .panel-curriculum {
+    margin-top: 10px; padding: 6px 12px; background: rgba(122,74,154,0.07);
+    border-radius: 4px; display: inline-block;
+  }
+  .panel-curriculum code {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    color: var(--accent-math); font-family: 'Outfit', sans-serif;
+  }
+  .panel-curriculum span { font-size: 11px; color: var(--text-light); margin-left: 6px; }
+  .panel-subjects { display: flex; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
+  .panel-subj-tag {
+    padding: 3px 10px; border-radius: 12px; font-size: 9px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .panel-subj-tag.math { background: rgba(122,74,154,0.08); color: var(--accent-math); }
+  .panel-subj-tag.history { background: rgba(160,80,48,0.08); color: var(--accent-history); }
+  .panel-subj-tag.science { background: rgba(42,138,90,0.08); color: var(--accent-science); }
+  .panel-subj-tag.ela { background: rgba(42,106,154,0.08); color: var(--accent-ela); }
+
+  .panel-body { padding: 24px 34px 40px; }
+  .panel-body p { font-family: 'Crimson Pro', serif; font-size: 16px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
+  .think-about { margin-top: 18px; padding: 16px 18px; background: rgba(122,74,154,0.05); border-left: 3px solid var(--accent-math); border-radius: 0 6px 6px 0; }
+  .think-about .label { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent-math); margin-bottom: 6px; }
+  .think-about p { font-size: 13px; line-height: 1.7; color: #4a3060; margin: 0; font-family: 'Outfit', sans-serif; }
+  .panel-stats { margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 14px; }
+  .panel-stats .stats-title { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,0.03); }
+  .stat-label { font-size: 12px; color: var(--text-light); letter-spacing: 1px; }
+  .stat-value { font-family: 'Crimson Pro', serif; font-size: 16px; font-weight: 600; color: var(--text-dark); }
+  .vocabulary { margin-top: 18px; padding: 16px 18px; background: rgba(160,80,48,0.04); border-radius: 6px; }
+  .vocabulary .label { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent-history); margin-bottom: 8px; }
+  .vocab-word { margin-bottom: 6px; }
+  .vocab-word strong { font-family: 'Crimson Pro', serif; font-size: 15px; color: var(--text-dark); }
+  .vocab-word span { font-size: 12px; color: var(--text-light); display: block; margin-top: 1px; }
+
+  /* MARKERS */
+  .point-marker { position: absolute; pointer-events: auto; cursor: pointer; z-index: 5; }
+  .marker-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: radial-gradient(circle, #9a60cc, #6a3a9a);
+    border: 3px solid #fff; box-shadow: 0 0 12px rgba(154,96,204,0.3), 0 2px 8px rgba(0,0,0,0.2);
+    animation: mp 3s ease-in-out infinite; position: relative;
+  }
+  .marker-ring {
+    position: absolute; top: -8px; left: -8px; width: 38px; height: 38px;
+    border-radius: 50%; border: 2px solid rgba(154,96,204,0.3);
+    animation: re 3s ease-in-out infinite;
+  }
+  .marker-tooltip {
+    position: absolute; left: 34px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; padding: 6px 14px; background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.08); border-radius: 4px;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dark); opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(-50%) translateX(5px); pointer-events: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+  .point-marker:hover .marker-tooltip { opacity: 1; transform: translateY(-50%) translateX(0); }
+  .point-marker:hover .marker-dot { transform: scale(1.3); transition: transform 0.3s; }
+  @keyframes mp {
+    0%,100% { box-shadow: 0 0 8px rgba(154,96,204,0.2), 0 2px 6px rgba(0,0,0,0.15); }
+    50% { box-shadow: 0 0 20px rgba(154,96,204,0.4), 0 2px 10px rgba(0,0,0,0.2); }
+  }
+  @keyframes re { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.5); opacity: 0; } }
+
+  @media (max-width: 768px) {
+    .info-panel { width: 100%; right: -100%; }
+    .hud-subjects { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="intro-screen" id="introScreen">
+  <div class="icon">📐</div>
+  <h1>The Great Pyramid</h1>
+  <div class="tagline">Geometry in Stone · Interactive 3D Diorama</div>
+  <button class="enter-btn" id="enterBtn">Explore the Pyramid</button>
+</div>
+
+<div class="hud-top" id="hudTop" style="opacity:0;transition:opacity 1s;">
+  <div class="hud-title">
+    <h1>The Great Pyramid of Giza</h1>
+    <div class="sub">AC v9 · Year 8–9 Maths · Measurement & Space</div>
+  </div>
+  <div class="hud-subjects">
+    <div class="subject-pill">Maths</div>
+    <div class="subject-pill">History</div>
+    <div class="subject-pill">Science</div>
+  </div>
+</div>
+
+<div class="controls-hint" id="hint" style="opacity:0;transition:opacity 1s;">Drag to rotate · Scroll to zoom · Click markers or tabs to learn</div>
+
+<div class="hud-bottom" id="hudBottom" style="opacity:0;transition:opacity 1s;">
+  <div class="point-tab" data-point="0"><span class="tab-num">01</span>Pythagoras</div>
+  <div class="point-tab" data-point="1"><span class="tab-num">02</span>Surface Area</div>
+  <div class="point-tab" data-point="2"><span class="tab-num">03</span>Angles & Trig</div>
+  <div class="point-tab" data-point="3"><span class="tab-num">04</span>Scale & Ratio</div>
+  <div class="point-tab" data-point="4"><span class="tab-num">05</span>Symmetry</div>
+</div>
+
+<div class="info-panel" id="infoPanel">
+  <div class="panel-header" id="panelHeader"></div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<div id="canvas-container" style="position:fixed;inset:0;z-index:1;"></div>
+<div id="markerLayer" style="position:fixed;inset:0;z-index:5;pointer-events:none;"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const infoPoints = [
+  {
+    id:1, title:"Pythagoras in the Pyramid", subtitle:"Right Angles in Ancient Stone",
+    acCode:"AC9M8M05", acDesc:"Use Pythagoras' theorem to solve problems involving the side lengths of right-angled triangles",
+    subjects:["math","history"],
+    pos:{x:0,y:8,z:6},
+    paragraphs:[
+      "The Great Pyramid is essentially four right-angled triangles leaning against each other. Each triangular face has a slant height — the distance from the base to the apex running along the face. To calculate this, the ancient builders needed the same maths you're learning: Pythagoras' theorem, a² + b² = c².",
+      "Here's the real calculation: the pyramid's base is 230.4 metres wide, so half the base is 115.2 m. The vertical height is 146.5 m. Using Pythagoras: slant height = √(115.2² + 146.5²) = √(13,271 + 21,462) = √34,733 ≈ 186.4 metres. That's the distance an ant would walk from the base to the very top along one face — further than the vertical height itself."
+    ],
+    thinkAbout:"An ant starts at the centre of one base edge and walks to the apex. Using the values above, verify that the slant height is approximately 186.4 m. Then calculate: how much longer is the slant path compared to the vertical height? Express this as a percentage.",
+    stats:{"Half-base (a)":"115.2 m","Height (b)":"146.5 m","Slant height (c)":"~186.4 m"},
+    vocabulary:[
+      {word:"Hypotenuse",def:"The longest side of a right-angled triangle, opposite the right angle"},
+      {word:"Pythagoras' theorem",def:"a² + b² = c² — relates the sides of a right-angled triangle"},
+      {word:"Slant height",def:"The distance measured along the face of a pyramid from base to apex"}
+    ]
+  },
+  {
+    id:2, title:"Surface Area", subtitle:"Covering the Pyramid in Limestone",
+    acCode:"AC9M8M01", acDesc:"Solve problems involving the area and perimeter of irregular and composite shapes using appropriate units",
+    subjects:["math","history","science"],
+    pos:{x:8,y:3,z:8},
+    paragraphs:[
+      "The Great Pyramid was originally covered in smooth, white Tura limestone that gleamed in the desert sun. To calculate how much limestone was needed, builders had to figure out the total surface area: the base (a square) plus four triangular faces.",
+      "Base area = 230.4 × 230.4 = 53,084 m². Each triangular face = ½ × base × slant height = ½ × 230.4 × 186.4 = 21,469 m². Four faces = 85,876 m². Total surface area = 53,084 + 85,876 = 138,960 m². That's about 19.5 football fields — and every square metre was covered with precisely cut and polished stone blocks, some weighing 15 tonnes each."
+    ],
+    thinkAbout:"The limestone casing stones were roughly 1.5 m × 1.5 m on their visible face. If each visible face is 2.25 m², approximately how many casing stones would you need to cover all four triangular faces (85,876 m²)? Show your working and consider: would the real answer be more or fewer? Why?",
+    stats:{"Base area":"53,084 m²","4 face areas":"85,876 m²","Total":"~139,000 m²"},
+    vocabulary:[
+      {word:"Surface area",def:"The total area of all faces or surfaces of a 3D shape"},
+      {word:"Composite shape",def:"A shape made up of two or more simple shapes combined"},
+      {word:"Tura limestone",def:"High-quality white limestone quarried near Cairo, used to case the pyramid"}
+    ]
+  },
+  {
+    id:3, title:"Angles & Trigonometry", subtitle:"The Perfect 51.84°",
+    acCode:"AC9M9M03", acDesc:"Apply trigonometric ratios to solve right-angled triangle problems",
+    subjects:["math","science"],
+    pos:{x:-6,y:6,z:0},
+    paragraphs:[
+      "Every face of the Great Pyramid slopes at precisely 51.84 degrees. This isn't a random angle — some mathematicians believe it was chosen because it creates a relationship between the pyramid's height and its base perimeter that closely approximates the mathematical constant π (pi). The ratio of the perimeter (4 × 230.4 = 921.6 m) divided by twice the height (2 × 146.5 = 293 m) equals approximately 3.145 — remarkably close to π (3.14159...).",
+      "Using trigonometry, you can verify this angle: tan(θ) = opposite/adjacent = 146.5/115.2 = 1.2717. So θ = arctan(1.2717) ≈ 51.84°. This is the same trigonometry (SOH CAH TOA) you use in Year 9 — except here it was applied 4,500 years ago without calculators, computers, or even a number system with zero."
+    ],
+    thinkAbout:"Using tan(θ) = 146.5 ÷ 115.2, verify the slope angle is approximately 51.84°. Then investigate: if the builders had chosen a 45° angle instead, what would the pyramid's height have been? (Hint: tan(45°) = 1). How would that change the pyramid's appearance?",
+    stats:{"Slope angle":"51.84°","Perimeter ÷ 2h":"≈ 3.145 (≈ π)","Built":"~2560 BCE"},
+    vocabulary:[
+      {word:"Trigonometric ratio",def:"A ratio comparing two sides of a right-angled triangle (sin, cos, tan)"},
+      {word:"Tangent (tan)",def:"In a right triangle: opposite side ÷ adjacent side"},
+      {word:"Arctan (inverse tan)",def:"The function that converts a ratio back into an angle"}
+    ]
+  },
+  {
+    id:4, title:"Scale & Proportion", subtitle:"Comparing Giants",
+    acCode:"AC9M8M07", acDesc:"Use mathematical modelling to solve practical problems involving ratios and rates",
+    subjects:["math","history","ela"],
+    pos:{x:0,y:14,z:0},
+    paragraphs:[
+      "The Great Pyramid stood 146.5 metres tall when completed — the tallest human-made structure on Earth for nearly 3,800 years. To grasp this scale: it's about 1.6 times the height of the Sydney Harbour Bridge (87 m), roughly the same as a 45-storey building, and slightly shorter than the Eureka Tower in Melbourne (297 m is the spire, but the roof is 253 m).",
+      "Scale models help us understand these proportions. If you built a model at 1:1000 scale, the pyramid would be 14.6 cm tall with a base of 23 cm — about the size of a large apple. At that scale, a human (1.7 m) would be 1.7 mm tall — barely visible. The pyramid contains approximately 2.3 million stone blocks with an estimated total mass of 6.1 million tonnes. If you divided that mass equally among the blocks, each would average about 2.5 tonnes — the weight of a large car."
+    ],
+    thinkAbout:"Create a scale drawing or calculation: if the Great Pyramid were built at 1:500 scale, what would its height and base length be in centimetres? At that same scale, how tall would you be? Write a ratio statement comparing your scale height to the scale pyramid height.",
+    stats:{"Original height":"146.5 m","Base length":"230.4 m","Stone blocks":"~2.3 million"},
+    vocabulary:[
+      {word:"Scale factor",def:"The ratio used to enlarge or reduce a shape while keeping proportions the same"},
+      {word:"Proportion",def:"An equation showing that two ratios are equal"},
+      {word:"Ratio",def:"A comparison of two quantities showing how many times one contains the other"}
+    ]
+  },
+  {
+    id:5, title:"Symmetry & Congruence", subtitle:"Perfection on All Four Sides",
+    acCode:"AC9M8SP02", acDesc:"Identify conditions for congruence and similarity of triangles and explain conditions for common shapes",
+    subjects:["math","science","history"],
+    pos:{x:6,y:3,z:-6},
+    paragraphs:[
+      "The Great Pyramid has four lines of symmetry when viewed from above — one through the middle of each face. Each of the four triangular faces is congruent, meaning they are exactly the same shape and size. For triangles to be congruent, they must satisfy conditions like SSS (Side-Side-Side): all three sides are equal. Since each face shares the same base length (230.4 m) and the same slant height (186.4 m), they meet the SSS condition perfectly.",
+      "The precision is astonishing. The base is level to within just 2.1 centimetres across its entire 230-metre length. The four sides are aligned almost perfectly to true north, south, east and west, with an error of less than 0.05 degrees. Modern surveyors with laser equipment would struggle to match this accuracy. It's believed the builders used star alignments, water levelling, and rope measurements — simple tools, extraordinary mathematics."
+    ],
+    thinkAbout:"The base of the pyramid is almost a perfect square, but not quite — the four sides differ by a maximum of 4.4 cm across 230.4 m. Calculate the percentage error: (4.4 ÷ 230,400) × 100. What does this tell you about the builders' precision? Compare this to a measurement error you might make in class.",
+    stats:{"Lines of symmetry":"4","Base levelling error":"2.1 cm over 230 m","Alignment to north":"< 0.05°"},
+    vocabulary:[
+      {word:"Congruent",def:"Shapes that are exactly the same size and shape — they can be overlaid perfectly"},
+      {word:"Line of symmetry",def:"A line that divides a shape into two mirror-image halves"},
+      {word:"SSS (Side-Side-Side)",def:"A congruence condition: if all three sides match, the triangles are congruent"}
+    ]
+  }
+];
+
+// THREE.JS
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x78b8e8);
+scene.fog = new THREE.Fog(0x78b8e8, 80, 200);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+container.appendChild(renderer.domElement);
+
+// Lights
+scene.add(new THREE.AmbientLight(0xf0e8d0, 0.7));
+const sun = new THREE.DirectionalLight(0xfff0c0, 1.2);
+sun.position.set(25, 40, 20); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -50; sun.shadow.camera.right = 50;
+sun.shadow.camera.top = 50; sun.shadow.camera.bottom = -50;
+scene.add(sun);
+scene.add(new THREE.HemisphereLight(0x87ceeb, 0xd4a860, 0.4));
+
+// DESERT GROUND
+const desertGeo = new THREE.PlaneGeometry(200, 200, 60, 60);
+desertGeo.rotateX(-Math.PI/2);
+const dPos = desertGeo.attributes.position;
+for (let i = 0; i < dPos.count; i++) {
+  const x = dPos.getX(i), z = dPos.getZ(i);
+  dPos.setY(i, Math.sin(x*0.05)*0.5 + Math.cos(z*0.07)*0.3 + (Math.random()-0.5)*0.2);
+}
+desertGeo.computeVertexNormals();
+const desertMat = new THREE.MeshStandardMaterial({ color: 0xd4a860, roughness: 0.95 });
+const desert = new THREE.Mesh(desertGeo, desertMat);
+desert.receiveShadow = true;
+scene.add(desert);
+
+// GREAT PYRAMID
+const pyrH = 14.65, pyrBase = 23.04; // 1:10 scale for display
+const pyrGeo = new THREE.ConeGeometry(pyrBase/2 * Math.SQRT2, pyrH, 4, 1);
+pyrGeo.rotateY(Math.PI/4);
+const pyrMat = new THREE.MeshStandardMaterial({ color: 0xd8c080, roughness: 0.7, metalness: 0.05 });
+const pyramid = new THREE.Mesh(pyrGeo, pyrMat);
+pyramid.position.y = pyrH/2;
+pyramid.castShadow = true;
+pyramid.receiveShadow = true;
+scene.add(pyramid);
+
+// Limestone casing highlight (wireframe)
+const wireGeo = new THREE.ConeGeometry(pyrBase/2 * Math.SQRT2 + 0.1, pyrH + 0.1, 4, 8);
+wireGeo.rotateY(Math.PI/4);
+const wireMesh = new THREE.Mesh(wireGeo, new THREE.MeshBasicMaterial({
+  color: 0xf0e8c0, wireframe: true, transparent: true, opacity: 0.08
+}));
+wireMesh.position.y = pyrH/2;
+scene.add(wireMesh);
+
+// Stepped blocks effect (horizontal lines on pyramid)
+for (let layer = 1; layer < 12; layer++) {
+  const t = layer / 12;
+  const size = (1 - t) * pyrBase/2 * Math.SQRT2;
+  const ringGeo = new THREE.RingGeometry(size - 0.05, size + 0.05, 4, 1);
+  ringGeo.rotateX(-Math.PI/2);
+  ringGeo.rotateZ(Math.PI/4);
+  const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({
+    color: 0xc8a860, transparent: true, opacity: 0.3, side: THREE.DoubleSide
+  }));
+  ring.position.y = t * pyrH + 0.05;
+  scene.add(ring);
+}
+
+// SMALLER PYRAMIDS (Queens' pyramids)
+[[-18, 0, 15], [-18, 0, 8], [-18, 0, 1]].forEach(([x,y,z]) => {
+  const sGeo = new THREE.ConeGeometry(3.5, 5, 4, 1);
+  sGeo.rotateY(Math.PI/4);
+  const sMesh = new THREE.Mesh(sGeo, new THREE.MeshStandardMaterial({ color: 0xc8a050, roughness: 0.8 }));
+  sMesh.position.set(x, 2.5, z);
+  sMesh.castShadow = true;
+  scene.add(sMesh);
+});
+
+// CAUSEWAY (path leading from pyramid)
+const causeway = new THREE.Mesh(
+  new THREE.BoxGeometry(40, 0.3, 3),
+  new THREE.MeshStandardMaterial({ color: 0xc0a050, roughness: 0.85 })
+);
+causeway.position.set(20, 0.15, 8);
+causeway.receiveShadow = true;
+scene.add(causeway);
+
+// MEASUREMENT ANNOTATIONS (visual guides)
+// Height line
+const heightLineMat = new THREE.LineBasicMaterial({ color: 0xff6644, transparent: true, opacity: 0.6 });
+const heightPts = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, pyrH, 0)];
+const heightLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(heightPts), heightLineMat);
+heightLine.position.set(pyrBase/2 * 0.75, 0, pyrBase/2 * 0.75);
+scene.add(heightLine);
+
+// Base line
+const basePts = [new THREE.Vector3(-pyrBase/2, 0, pyrBase/2), new THREE.Vector3(pyrBase/2, 0, pyrBase/2)];
+const baseLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(basePts), new THREE.LineBasicMaterial({ color: 0x4488ff, transparent: true, opacity: 0.6 }));
+baseLine.position.y = 0.1;
+scene.add(baseLine);
+
+// Slant height line
+const slantPts = [new THREE.Vector3(0, 0, pyrBase/2), new THREE.Vector3(0, pyrH, 0)];
+const slantLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(slantPts), new THREE.LineBasicMaterial({ color: 0x44cc44, transparent: true, opacity: 0.6 }));
+slantLine.position.y = 0.1;
+scene.add(slantLine);
+
+// SAND PARTICLES
+const sandCount = 300;
+const sandGeo = new THREE.BufferGeometry();
+const sandPos = new Float32Array(sandCount * 3);
+for (let i = 0; i < sandCount; i++) {
+  sandPos[i*3] = (Math.random()-0.5)*100;
+  sandPos[i*3+1] = Math.random()*20;
+  sandPos[i*3+2] = (Math.random()-0.5)*100;
+}
+sandGeo.setAttribute('position', new THREE.BufferAttribute(sandPos, 3));
+const sandParts = new THREE.Points(sandGeo, new THREE.PointsMaterial({
+  color: 0xd4b878, size: 0.15, transparent: true, opacity: 0.3, sizeAttenuation: true
+}));
+scene.add(sandParts);
+
+// CAMERA
+let isDrag = false, prev = {x:0,y:0};
+let sph = { theta: Math.PI/4, phi: Math.PI/3.2, radius: 45 };
+function updateCam() {
+  camera.position.set(
+    sph.radius*Math.sin(sph.phi)*Math.sin(sph.theta),
+    sph.radius*Math.cos(sph.phi),
+    sph.radius*Math.sin(sph.phi)*Math.cos(sph.theta)
+  );
+  camera.lookAt(0, 5, 0);
+}
+updateCam();
+
+renderer.domElement.addEventListener('mousedown', e=>{isDrag=true;prev={x:e.clientX,y:e.clientY};});
+renderer.domElement.addEventListener('mousemove', e=>{
+  if(!isDrag)return;
+  sph.theta-=(e.clientX-prev.x)*0.005;
+  sph.phi=Math.max(0.3,Math.min(Math.PI/2.1,sph.phi+(e.clientY-prev.y)*0.005));
+  prev={x:e.clientX,y:e.clientY};updateCam();
+});
+renderer.domElement.addEventListener('mouseup',()=>isDrag=false);
+renderer.domElement.addEventListener('mouseleave',()=>isDrag=false);
+renderer.domElement.addEventListener('wheel',e=>{sph.radius=Math.max(18,Math.min(80,sph.radius+e.deltaY*0.04));updateCam();});
+renderer.domElement.addEventListener('touchstart',e=>{if(e.touches.length===1){isDrag=true;prev={x:e.touches[0].clientX,y:e.touches[0].clientY};}});
+renderer.domElement.addEventListener('touchmove',e=>{if(!isDrag||e.touches.length!==1)return;e.preventDefault();sph.theta-=(e.touches[0].clientX-prev.x)*0.005;sph.phi=Math.max(0.3,Math.min(Math.PI/2.1,sph.phi+(e.touches[0].clientY-prev.y)*0.005));prev={x:e.touches[0].clientX,y:e.touches[0].clientY};updateCam();},{passive:false});
+renderer.domElement.addEventListener('touchend',()=>isDrag=false);
+
+// MARKERS
+const markerLayer = document.getElementById('markerLayer');
+const markerEls = infoPoints.map(pt => {
+  const el = document.createElement('div');
+  el.className = 'point-marker';
+  el.innerHTML = `<div class="marker-dot"><div class="marker-ring"></div></div><div class="marker-tooltip">${pt.title}</div>`;
+  el.addEventListener('click', () => openPanel(pt));
+  markerLayer.appendChild(el);
+  return { el, pt };
+});
+function updateMarkers() {
+  markerEls.forEach(({el,pt}) => {
+    const v = new THREE.Vector3(pt.pos.x,pt.pos.y,pt.pos.z).project(camera);
+    if(v.z>1){el.style.display='none';return;}
+    el.style.display='block';
+    el.style.transform=`translate(${(v.x*0.5+0.5)*window.innerWidth-11}px,${(-v.y*0.5+0.5)*window.innerHeight-11}px)`;
+  });
+}
+
+// PANEL
+function openPanel(pt) {
+  const subjs = pt.subjects.map(s=>{
+    const l={math:'Maths',history:'History',science:'Science',ela:'ELA'};
+    return `<span class="panel-subj-tag ${s}">${l[s]}</span>`;
+  }).join('');
+  document.getElementById('panelHeader').innerHTML = `
+    <button class="panel-close" onclick="document.getElementById('infoPanel').classList.remove('active');document.querySelectorAll('.point-tab').forEach(t=>t.classList.remove('active'));">✕</button>
+    <div class="panel-number">0${pt.id}</div>
+    <h2>${pt.title}</h2>
+    <div class="panel-subtitle">${pt.subtitle}</div>
+    <div class="panel-curriculum"><code>${pt.acCode}</code><span>— ${pt.acDesc}</span></div>
+    <div class="panel-subjects">${subjs}</div>
+  `;
+  const paras = pt.paragraphs.map(p=>`<p>${p}</p>`).join('');
+  const stats = Object.entries(pt.stats).map(([k,v])=>`<div class="stat-row"><span class="stat-label">${k}</span><span class="stat-value">${v}</span></div>`).join('');
+  const vocab = pt.vocabulary.map(v=>`<div class="vocab-word"><strong>${v.word}</strong><span>${v.def}</span></div>`).join('');
+  document.getElementById('panelBody').innerHTML = `${paras}
+    <div class="think-about"><div class="label">📐 Calculate &amp; Reason</div><p>${pt.thinkAbout}</p></div>
+    <div class="panel-stats"><div class="stats-title">By the Numbers</div>${stats}</div>
+    <div class="vocabulary"><div class="label">📖 Key Vocabulary</div>${vocab}</div>`;
+  document.getElementById('infoPanel').classList.add('active');
+  document.querySelectorAll('.point-tab').forEach(t=>t.classList.remove('active'));
+  const tab=document.querySelector(`.point-tab[data-point="${pt.id-1}"]`);
+  if(tab)tab.classList.add('active');
+}
+
+document.querySelectorAll('.point-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>openPanel(infoPoints[parseInt(tab.dataset.point)]));
+});
+
+// INTRO
+document.getElementById('enterBtn').addEventListener('click',()=>{
+  document.getElementById('introScreen').classList.add('fade-out');
+  setTimeout(()=>{
+    document.getElementById('introScreen').style.display='none';
+    document.getElementById('hudTop').style.opacity='1';
+    document.getElementById('hudBottom').style.opacity='1';
+    document.getElementById('hint').style.opacity='1';
+  },600);
+});
+
+// ANIMATE
+let time = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.006;
+  // Sand drift
+  const sp = sandParts.geometry.attributes.position;
+  for(let i=0;i<sp.count;i++){
+    let x=sp.getX(i); x+=0.02+Math.sin(time+i)*0.005;
+    if(x>50)x=-50;
+    sp.setX(i,x);
+    sp.setY(i, sp.getY(i)+Math.sin(time*0.5+i*0.1)*0.003);
+  }
+  sp.needsUpdate=true;
+  updateMarkers();
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
+</body>
+</html>

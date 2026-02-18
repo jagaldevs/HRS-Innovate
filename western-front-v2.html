@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Western Front — Interactive 3D Diorama</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@200;300;400;500;600&display=swap');
+
+  :root {
+    --gold: #5a4a2a;
+    --gold-dim: #6a5a3a;
+    --gold-glow: rgba(90,74,42,0.3);
+    --parchment: #1a1710;
+    --ink: #1a1710;
+    --mud: #2e2518;
+    --smoke: rgba(180,170,150,0.08);
+    --panel-bg: rgba(255,252,245,0.96);
+    --accent-history: #a05030;
+    --accent-ela: #2a6a9a;
+    --accent-science: #3a7a2a;
+    --accent-math: #8a3a8a;
+    --accent-tech: #7a7520;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: grab;
+  }
+  body:active { cursor: grabbing; }
+
+  canvas { display: block; }
+
+  /* ===== INTRO SEQUENCE ===== */
+  .intro-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1.5s ease;
+  }
+  .intro-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .intro-screen .year {
+    font-family: 'Crimson Pro', serif;
+    font-size: 120px;
+    font-weight: 700;
+    color: var(--gold);
+    opacity: 0;
+    animation: introYear 3s ease forwards 0.5s;
+    line-height: 1;
+    letter-spacing: -4px;
+  }
+  .intro-screen .tagline {
+    font-size: 14px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    opacity: 0;
+    animation: introFade 2s ease forwards 1.5s;
+    margin-top: 12px;
+  }
+  .intro-screen .enter-btn {
+    margin-top: 40px;
+    padding: 14px 40px;
+    background: none;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0;
+    animation: introFade 2s ease forwards 2.5s;
+    transition: all 0.4s;
+  }
+  .intro-screen .enter-btn:hover {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  @keyframes introYear {
+    0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+  @keyframes introFade {
+    to { opacity: 1; }
+  }
+
+  /* ===== HUD OVERLAY ===== */
+  .hud-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, rgba(120,130,140,0.85), transparent);
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 30px;
+  }
+
+  .hud-title h1 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  }
+  .hud-title .sub {
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #ddd;
+    margin-top: 2px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  .hud-subjects {
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+  }
+  .subject-pill {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+    cursor: default;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .subject-pill.active { opacity: 1; }
+  .subject-pill[data-subj="history"] { color: #fff; border-color: rgba(255,255,255,0.4); }
+  .subject-pill[data-subj="ela"] { color: #fff; border-color: rgba(255,255,255,0.4); }
+  .subject-pill[data-subj="science"] { color: #fff; border-color: rgba(255,255,255,0.4); }
+  .subject-pill[data-subj="math"] { color: #fff; border-color: rgba(255,255,255,0.4); }
+  .subject-pill[data-subj="tech"] { color: #fff; border-color: rgba(255,255,255,0.4); }
+
+  /* ===== BOTTOM CONTROL BAR ===== */
+  .hud-bottom {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: linear-gradient(to top, rgba(120,130,140,0.85), transparent);
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 18px;
+    gap: 6px;
+  }
+
+  .point-tab {
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.35s;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+  }
+  .point-tab:hover, .point-tab.active {
+    background: rgba(255,255,255,0.4);
+    border-color: #fff;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  .point-tab .tab-num {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 6px;
+  }
+
+  /* ===== CONTROLS HINT ===== */
+  .controls-hint {
+    position: fixed;
+    bottom: 78px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    pointer-events: none;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    transition: opacity 2s;
+  }
+
+  /* ===== INFO PANEL ===== */
+  .info-panel {
+    position: fixed;
+    right: -460px;
+    top: 0;
+    width: 440px;
+    height: 100vh;
+    background: rgba(255,252,245,0.97);
+    border-left: 1px solid rgba(0,0,0,0.08);
+    z-index: 50;
+    transition: right 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    backdrop-filter: blur(30px);
+    box-shadow: -30px 0 80px rgba(0,0,0,0.2);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .info-panel.active { right: 0; }
+
+  .panel-header {
+    position: relative;
+    padding: 50px 36px 30px;
+    background: linear-gradient(135deg, rgba(90,74,42,0.06), transparent);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .panel-close {
+    position: absolute;
+    top: 18px; right: 18px;
+    width: 36px; height: 36px;
+    background: none;
+    border: 1px solid rgba(0,0,0,0.12);
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+  .panel-close:hover { border-color: #333; color: #333; }
+
+  .panel-number {
+    font-family: 'Crimson Pro', serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.04);
+    line-height: 1;
+    position: absolute;
+    top: 20px;
+    left: 36px;
+  }
+
+  .panel-header h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #2a2015;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+  }
+
+  .panel-header .panel-date {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #8a7a60;
+    margin-top: 8px;
+  }
+
+  .panel-subjects {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .panel-subj-tag {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .panel-subj-tag.history { background: rgba(160,80,48,0.1); color: var(--accent-history); }
+  .panel-subj-tag.ela { background: rgba(42,106,154,0.1); color: var(--accent-ela); }
+  .panel-subj-tag.science { background: rgba(58,122,42,0.1); color: var(--accent-science); }
+  .panel-subj-tag.math { background: rgba(138,58,138,0.1); color: var(--accent-math); }
+  .panel-subj-tag.tech { background: rgba(122,117,32,0.1); color: var(--accent-tech); }
+
+  .panel-body {
+    padding: 28px 36px 40px;
+  }
+
+  .panel-body p {
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #3a3428;
+    margin-bottom: 16px;
+  }
+
+  .think-about {
+    margin-top: 20px;
+    padding: 18px 20px;
+    background: rgba(42,106,154,0.06);
+    border-left: 3px solid var(--accent-ela);
+    border-radius: 0 6px 6px 0;
+  }
+  .think-about .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-ela);
+    margin-bottom: 8px;
+  }
+  .think-about p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #2a5070;
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .panel-stats {
+    margin-top: 24px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding-top: 16px;
+  }
+  .panel-stats .stats-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #8a7a60;
+    margin-bottom: 12px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  .stat-label {
+    font-size: 12px;
+    color: #7a6e5a;
+    letter-spacing: 1px;
+  }
+  .stat-value {
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #3a3020;
+  }
+
+  .vocabulary {
+    margin-top: 20px;
+    padding: 18px 20px;
+    background: rgba(160,80,48,0.05);
+    border-radius: 6px;
+  }
+  .vocabulary .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-history);
+    margin-bottom: 10px;
+  }
+  .vocab-word {
+    margin-bottom: 8px;
+  }
+  .vocab-word strong {
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    color: #2a2015;
+  }
+  .vocab-word span {
+    font-size: 13px;
+    color: #6a5e4a;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ===== POINT MARKERS ===== */
+  .point-marker {
+    position: absolute;
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 5;
+  }
+  .marker-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #e74c3c 0%, #c0392b 100%);
+    border: 3px solid #fff;
+    box-shadow: 0 0 12px rgba(231,76,60,0.4), 0 2px 8px rgba(0,0,0,0.3);
+    animation: markerPulse 3s ease-in-out infinite;
+    position: relative;
+  }
+  .marker-ring {
+    position: absolute;
+    top: -8px; left: -8px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(231,76,60,0.3);
+    animation: ringExpand 3s ease-in-out infinite;
+  }
+  .marker-tooltip {
+    position: absolute;
+    left: 34px;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #2a2015;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(-50%) translateX(5px);
+    pointer-events: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+  .point-marker:hover .marker-tooltip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+  .point-marker:hover .marker-dot {
+    transform: scale(1.4);
+    transition: transform 0.3s;
+  }
+
+  @keyframes markerPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(231,76,60,0.3), 0 2px 8px rgba(0,0,0,0.2); }
+    50% { box-shadow: 0 0 18px rgba(231,76,60,0.5), 0 2px 12px rgba(0,0,0,0.3); }
+  }
+  @keyframes ringExpand {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.5); opacity: 0; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .info-panel { width: 100%; right: -100%; }
+    .hud-subjects { display: none; }
+    .point-tab { padding: 6px 10px; font-size: 9px; }
+    .point-tab .tab-num { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== INTRO SCREEN ===== -->
+<div class="intro-screen" id="introScreen">
+  <div class="year">1916</div>
+  <div class="tagline">The Western Front · Interactive Diorama</div>
+  <button class="enter-btn" id="enterBtn">Explore the Battlefield</button>
+</div>
+
+<!-- ===== HUD ===== -->
+<div class="hud-top" id="hudTop" style="opacity:0; transition: opacity 1s;">
+  <div class="hud-title">
+    <h1>The Western Front</h1>
+    <div class="sub">World War I · 1914–1918</div>
+  </div>
+  <div class="hud-subjects">
+    <div class="subject-pill active" data-subj="history">History</div>
+    <div class="subject-pill active" data-subj="ela">ELA</div>
+    <div class="subject-pill active" data-subj="science">Science</div>
+    <div class="subject-pill active" data-subj="math">Math</div>
+  </div>
+</div>
+
+<div class="controls-hint" id="hint" style="opacity:0; transition: opacity 1s;">Drag to rotate · Scroll to zoom · Click markers or tabs to learn</div>
+
+<div class="hud-bottom" id="hudBottom" style="opacity:0; transition: opacity 1s;">
+  <div class="point-tab" data-point="0"><span class="tab-num">01</span>Trenches</div>
+  <div class="point-tab" data-point="1"><span class="tab-num">02</span>No Man's Land</div>
+  <div class="point-tab" data-point="2"><span class="tab-num">03</span>Artillery</div>
+  <div class="point-tab" data-point="3"><span class="tab-num">04</span>Barbed Wire</div>
+  <div class="point-tab" data-point="4"><span class="tab-num">05</span>Observation</div>
+</div>
+
+<!-- ===== INFO PANEL ===== -->
+<div class="info-panel" id="infoPanel">
+  <div class="panel-header" id="panelHeader"></div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<!-- ===== 3D CANVAS ===== -->
+<div id="canvas-container" style="position:fixed;inset:0;z-index:1;"></div>
+
+<!-- ===== MARKER LAYER ===== -->
+<div id="markerLayer" style="position:fixed;inset:0;z-index:5;pointer-events:none;"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ==========================================
+// INFO POINTS DATA (middle-school level)
+// ==========================================
+const infoPoints = [
+  {
+    id: 1,
+    title: "The Trench System",
+    date: "1914–1918 · All Along the Front",
+    subjects: ["history", "science", "ela"],
+    pos: { x: -12, y: 1.5, z: 8 },
+    paragraphs: [
+      "Imagine living in a muddy ditch for weeks at a time. That was life for millions of soldiers on the Western Front. The trench system stretched over 400 miles — roughly the distance from New York City to Detroit — from the English Channel all the way to Switzerland.",
+      "Trenches were dug in a zigzag pattern (not straight lines) so that if the enemy captured one section, they couldn't shoot down the entire length. Soldiers stood on wooden planks called \"duckboards\" to keep above the water that constantly pooled at the bottom."
+    ],
+    thinkAbout: "Imagine writing a letter home to your family from the trenches. What would you describe? What might you leave out to protect them from worry? This is exactly the kind of primary source historians study.",
+    stats: { "Total Length": "~400 miles", "Trench Depth": "6–8 feet", "Time in Front Line": "~10 days" },
+    vocabulary: [
+      { word: "Parapet", def: "A wall of sandbags at the top of a trench for protection" },
+      { word: "Duckboard", def: "Wooden planks laid in trenches to keep soldiers above the mud and water" },
+      { word: "No Man's Land", def: "The dangerous open ground between enemy trench lines" }
+    ]
+  },
+  {
+    id: 2,
+    title: "No Man's Land",
+    date: "The Deadly Space Between",
+    subjects: ["history", "ela", "math"],
+    pos: { x: 0, y: 1, z: 0 },
+    paragraphs: [
+      "Between the two enemy trench lines lay a stretch of destroyed earth called No Man's Land. It could be as narrow as a basketball court (about 50 yards) or wider than five football fields (500+ yards). Nothing survived there — no trees, no grass, just mud, craters, and barbed wire.",
+      "When soldiers were ordered to attack, they climbed \"over the top\" of their trench and ran across this open ground. Machine guns could fire 600 rounds per minute. On the first day of the Battle of the Somme (July 1, 1916), the British suffered 57,470 casualties — the worst single day in British military history."
+    ],
+    thinkAbout: "The number 57,470 is hard to grasp. That's roughly the entire population of a town the size of Fond du Lac, Wisconsin — gone in one day. When we read large numbers in history, how can we make them feel real instead of just statistics?",
+    stats: { "Width": "50–500+ yards", "Somme, Day 1": "57,470 casualties", "Machine Gun Rate": "~600 rounds/min" },
+    vocabulary: [
+      { word: "Over the top", def: "The command for soldiers to climb out of the trench and advance" },
+      { word: "Casualty", def: "A soldier killed, wounded, captured, or missing in action" },
+      { word: "Attrition", def: "A strategy of wearing down the enemy through continuous losses" }
+    ]
+  },
+  {
+    id: 3,
+    title: "Artillery Batteries",
+    date: "The War's Deadliest Weapon",
+    subjects: ["history", "science", "math"],
+    pos: { x: -16, y: 2.5, z: -10 },
+    paragraphs: [
+      "Artillery — massive cannons positioned behind the front lines — caused about 60% of all deaths in World War I. Before the Battle of the Somme, the British fired 1.7 million shells over seven days. That's almost 170 shells launched every single minute, day and night, for a full week.",
+      "The science behind artillery involves physics concepts you might recognize: trajectory (the curved path of a projectile), velocity, and the force of explosions creating pressure waves. The constant shelling also transformed the landscape itself — entire forests were reduced to stumps, and villages simply disappeared."
+    ],
+    thinkAbout: "Soldiers exposed to constant shelling often developed \"shell shock\" — what we now call PTSD (Post-Traumatic Stress Disorder). How does understanding the science of pressure waves and sound help us understand why this happened to so many soldiers?",
+    stats: { "Casualties Caused": "~60% of all", "Somme Barrage": "1.7 million shells", "Max Range": "Up to 15 miles" },
+    vocabulary: [
+      { word: "Trajectory", def: "The curved path an object follows when launched through the air" },
+      { word: "Barrage", def: "Concentrated artillery fire over a wide area before an attack" },
+      { word: "Shell shock", def: "An early term for PTSD caused by the trauma of combat" }
+    ]
+  },
+  {
+    id: 4,
+    title: "Barbed Wire Defenses",
+    date: "The Entanglement",
+    subjects: ["history", "math", "science"],
+    pos: { x: 5, y: 0.6, z: 5 },
+    paragraphs: [
+      "Barbed wire wasn't invented for war — it was originally designed for cattle fences in the American West. But on the Western Front, it became one of the most feared obstacles. Britain alone used roughly 1 billion feet of barbed wire during the war. If you stretched that out, it would wrap around Earth about 75 times.",
+      "Wire belts were often 30 feet deep, anchored with iron posts. Cutting through wire while enemy machine guns fired at you was one of the most dangerous jobs a soldier could face. Artillery was supposed to destroy the wire before an attack, but explosions often just tangled it into even worse shapes."
+    ],
+    thinkAbout: "One billion feet of wire wrapping Earth 75 times. When we deal with numbers this large, we use comparisons to make them meaningful. What other comparisons could you create to help someone understand how much wire was used?",
+    stats: { "Wire (UK alone)": "~1 billion feet", "Belt Depth": "Up to 30 feet", "Wraps Earth": "~75 times" },
+    vocabulary: [
+      { word: "Entanglement", def: "A barrier of barbed wire designed to slow and trap attacking soldiers" },
+      { word: "Screw picket", def: "A corkscrew-shaped iron post that could be silently twisted into the ground" },
+      { word: "Kill zone", def: "An area covered by machine guns where attackers had almost no chance of survival" }
+    ]
+  },
+  {
+    id: 5,
+    title: "Observation & Command",
+    date: "Eyes Over the Battlefield",
+    subjects: ["history", "science", "tech"],
+    pos: { x: -20, y: 4, z: -16 },
+    paragraphs: [
+      "You can't aim artillery if you can't see where the shells land. Observation posts — raised platforms, church steeples, or hilltops — gave forward observers a view into enemy territory. They used telescopes and periscopes to spot targets, then relayed coordinates by telephone to the gun crews.",
+      "This was also the first war to use aircraft and observation balloons for aerial reconnaissance. Photographers in biplanes took pictures of enemy trenches from 3,000 feet up, creating some of the earliest aerial maps. This was technology changing warfare in real time — a preview of how satellites and drones work today."
+    ],
+    thinkAbout: "The jump from biplane photography to modern satellite imagery happened in about 100 years. What technologies used in today's military might seem primitive 100 years from now? How does technology shape not just how wars are fought, but whether they happen at all?",
+    stats: { "Balloon Altitude": "~3,000 feet", "Phone Lines Laid": "Millions of miles", "Observer Spacing": "Every ~200 yards" },
+    vocabulary: [
+      { word: "Reconnaissance", def: "The act of gathering information about the enemy through observation" },
+      { word: "Periscope", def: "A device using mirrors to see over obstacles without exposing yourself" },
+      { word: "Coordinates", def: "Numbers that describe a specific location on a map or grid" }
+    ]
+  }
+];
+
+// ==========================================
+// THREE.JS SCENE
+// ==========================================
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8a94a0);
+scene.fog = new THREE.FogExp2(0x8a94a0, 0.009);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+container.appendChild(renderer.domElement);
+
+// Lights
+scene.add(new THREE.AmbientLight(0xc0b8a8, 0.9));
+
+const sun = new THREE.DirectionalLight(0xfff4e0, 1.1);
+sun.position.set(20, 30, 10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 100;
+sun.shadow.camera.left = -40;
+sun.shadow.camera.right = 40;
+sun.shadow.camera.top = 40;
+sun.shadow.camera.bottom = -40;
+scene.add(sun);
+
+const fogGlow = new THREE.PointLight(0xffddaa, 0.5, 60);
+fogGlow.position.set(-10, 8, -5);
+scene.add(fogGlow);
+
+scene.add(new THREE.DirectionalLight(0xaabbdd, 0.4).translateX(-15).translateY(10).translateZ(-20));
+
+// Materials
+const mudMat = new THREE.MeshStandardMaterial({ color: 0x7a6a50, roughness: 0.95 });
+const noMansMat = new THREE.MeshStandardMaterial({ color: 0x5a4a38, roughness: 1 });
+const trenchWallMat = new THREE.MeshStandardMaterial({ color: 0x6b5540, roughness: 0.9 });
+const sandbagMat = new THREE.MeshStandardMaterial({ color: 0x9a8a6a, roughness: 0.85 });
+const woodMat = new THREE.MeshStandardMaterial({ color: 0x7a6548, roughness: 0.8, metalness: 0.05 });
+const metalMat = new THREE.MeshStandardMaterial({ color: 0x6a6a6a, roughness: 0.4, metalness: 0.8 });
+const wireMat = new THREE.MeshStandardMaterial({ color: 0x707070, roughness: 0.5, metalness: 0.7 });
+const waterMat = new THREE.MeshStandardMaterial({ color: 0x5a7060, roughness: 0.3, metalness: 0.2, transparent: true, opacity: 0.6 });
+
+// === TERRAIN ===
+function buildTerrain() {
+  const geo = new THREE.PlaneGeometry(80, 80, 80, 80);
+  geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    let y = Math.sin(x * 0.1) * 0.8 + Math.cos(z * 0.15) * 0.5 + Math.abs(z) * 0.04;
+    if (Math.abs(z) < 8) y -= (8 - Math.abs(z)) * 0.15;
+    const craters = [[3,2,3],[-5,-1,2.5],[8,0,2],[-2,-3,3.5],[-10,1,2.8],[12,-2,2.2],[-7,3,1.8]];
+    craters.forEach(([cx,cz,cr]) => {
+      const d = Math.sqrt((x-cx)**2 + (z-cz)**2);
+      if (d < cr) y -= (cr - d) * 0.5;
+    });
+    pos.setY(i, y);
+  }
+  geo.computeVertexNormals();
+
+  const colors = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const z = pos.getZ(i);
+    if (Math.abs(z) < 8) { colors[i*3]=0.35; colors[i*3+1]=0.28; colors[i*3+2]=0.2; }
+    else if (z > 8) { const t=Math.min((z-8)/20,1); colors[i*3]=0.38+t*0.08; colors[i*3+1]=0.38+t*0.12; colors[i*3+2]=0.28; }
+    else { const t=Math.min((-z-8)/20,1); colors[i*3]=0.36+t*0.06; colors[i*3+1]=0.34+t*0.07; colors[i*3+2]=0.26; }
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+
+// === TRENCH ===
+function buildTrench(xStart, zCenter, length, depth) {
+  const g = new THREE.Group();
+  const segs = 8, segLen = length / segs;
+  for (let s = 0; s < segs; s++) {
+    const xOff = xStart + s * segLen;
+    const zOff = zCenter + (s % 2 === 0 ? -1.2 : 1.2);
+    // Floor
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(segLen+0.5, 0.2, 2.5), mudMat);
+    floor.position.set(xOff+segLen/2, -depth+0.1, zOff); floor.receiveShadow = true; g.add(floor);
+    // Duckboards
+    for (let d = 0; d < segLen; d += 1.2) {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.08, 2), woodMat);
+      b.position.set(xOff+d+0.4, -depth+0.25, zOff); b.castShadow = true; g.add(b);
+    }
+    // Walls
+    for (let side of [-1, 1]) {
+      const w = new THREE.Mesh(new THREE.BoxGeometry(segLen+0.5, depth+0.5, 0.4), trenchWallMat);
+      w.position.set(xOff+segLen/2, -depth/2+0.2, zOff+side*1.25);
+      w.castShadow = true; w.receiveShadow = true; g.add(w);
+    }
+    // Sandbags
+    for (let row = 0; row < 3; row++) {
+      for (let sb = 0; sb < segLen/1.2; sb++) {
+        const bag = new THREE.Mesh(new THREE.BoxGeometry(1, 0.3, 0.5), sandbagMat);
+        bag.position.set(xOff+sb*1.2+0.6+(row%2?0.3:0), 0.2+row*0.28, zOff-1.5);
+        bag.rotation.y = (Math.random()-0.5)*0.15; bag.castShadow = true; g.add(bag);
+      }
+    }
+    // Water puddles
+    if (Math.random() > 0.4) {
+      const puddle = new THREE.Mesh(new THREE.PlaneGeometry(segLen*0.6, 1.5).rotateX(-Math.PI/2), waterMat);
+      puddle.position.set(xOff+segLen/2, -depth+0.22, zOff); g.add(puddle);
+    }
+  }
+  return g;
+}
+
+scene.add(buildTrench(-18, 10, 36, 1.5));
+scene.add(buildTrench(-15, 16, 30, 1.2));
+const germanTrench = buildTrench(-18, -10, 36, 1.5);
+germanTrench.rotation.y = Math.PI; germanTrench.position.x = 18;
+scene.add(germanTrench);
+
+// Comm trenches
+function buildCommTrench(x, zS, zE) {
+  const g = new THREE.Group();
+  const len = Math.abs(zE - zS);
+  const f = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.15, len), mudMat);
+  f.position.set(x, -1.2, (zS+zE)/2); f.receiveShadow = true; g.add(f);
+  for (let s of [-1,1]) {
+    const w = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, len), trenchWallMat);
+    w.position.set(x+s*0.9, -0.5, (zS+zE)/2); w.castShadow = true; g.add(w);
+  }
+  scene.add(g);
+}
+buildCommTrench(-8, 10, 16);
+buildCommTrench(6, 10, 16);
+
+// === BARBED WIRE ===
+function buildWire(x, z, length) {
+  const g = new THREE.Group();
+  for (let i = 0; i < length; i += 2) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 4), metalMat);
+    post.position.set(x+i, 0.6, z+(Math.random()-0.5)*0.5);
+    post.rotation.z = (Math.random()-0.5)*0.15; post.castShadow = true; g.add(post);
+    if (i > 0) for (let w = 0; w < 3; w++) {
+      const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.2, 3), wireMat);
+      wire.position.set(x+i-1, 0.3+w*0.3, z+(Math.random()-0.5)*0.8);
+      wire.rotation.z = Math.PI/2+(Math.random()-0.5)*0.3;
+      wire.rotation.x = (Math.random()-0.5)*0.4; g.add(wire);
+    }
+  }
+  scene.add(g);
+}
+buildWire(-14, 7, 28); buildWire(-12, 6, 24);
+buildWire(-14, -7, 28); buildWire(-12, -6, 24);
+
+// === CRATERS ===
+[[3,2,3],[-5,-1,2.5],[8,0,2],[-2,-3,3.5],[-10,1,2.8],[12,-2,2.2],[-7,3,1.8]].forEach(([x,z,r]) => {
+  const crater = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 8, 0, Math.PI*2, 0, Math.PI/2), noMansMat);
+  crater.rotation.x = Math.PI; crater.position.set(x, 0, z); crater.receiveShadow = true; scene.add(crater);
+  const water = new THREE.Mesh(new THREE.CircleGeometry(r*0.7, 12).rotateX(-Math.PI/2), waterMat);
+  water.position.set(x, -0.3, z); scene.add(water);
+});
+
+// === DEAD TREES ===
+const treeMat = new THREE.MeshStandardMaterial({ color: 0x4a3e30, roughness: 0.9 });
+for (let i = 0; i < 15; i++) {
+  const x = (Math.random()-0.5)*50, z = (Math.random()-0.5)*10;
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.15, 3+Math.random()*2, 5), treeMat);
+  trunk.position.set(x, 1.2, z); trunk.rotation.z = (Math.random()-0.5)*0.3; trunk.castShadow = true; scene.add(trunk);
+  for (let b = 0; b < 2+Math.floor(Math.random()*2); b++) {
+    const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.06, 1.2, 4), treeMat);
+    branch.position.set(x+(Math.random()-0.5)*0.5, 1.5+b*0.7, z+(Math.random()-0.5)*0.5);
+    branch.rotation.z = (Math.random()-0.5)*1.2; branch.rotation.x = (Math.random()-0.5)*0.8;
+    branch.castShadow = true; scene.add(branch);
+  }
+}
+
+// === ARTILLERY ===
+function buildArtillery(x, z, rotY) {
+  const g = new THREE.Group();
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 4, 8), metalMat);
+  barrel.rotation.z = Math.PI/2-0.3; barrel.position.set(0, 1.2, 0); barrel.castShadow = true; g.add(barrel);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(2, 0.6, 1.5), woodMat);
+  base.position.set(-0.5, 0.3, 0); base.castShadow = true; g.add(base);
+  for (let s of [-1,1]) {
+    const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.1, 6, 12), woodMat);
+    wheel.position.set(-0.3, 0.6, s*1); wheel.rotation.y = Math.PI/2; wheel.castShadow = true; g.add(wheel);
+  }
+  const trail = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 0.3), metalMat);
+  trail.position.set(-2.5, 0.15, 0); g.add(trail);
+  g.position.set(x, 0, z); g.rotation.y = rotY; scene.add(g);
+}
+buildArtillery(-15, -14, 0.3);
+buildArtillery(-8, -15, 0.1);
+buildArtillery(2, -13, -0.2);
+
+// === OBSERVATION POST ===
+function buildObsPost(x, z) {
+  const g = new THREE.Group();
+  for (let px of [-1,1]) for (let pz of [-1,1]) {
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 5, 6), woodMat);
+    pole.position.set(px*1.2, 2.5, pz*1.2); pole.castShadow = true; g.add(pole);
+  }
+  const plat = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 3), woodMat);
+  plat.position.set(0, 4.5, 0); plat.castShadow = true; plat.receiveShadow = true; g.add(plat);
+  for (let i = 0; i < 6; i++) {
+    const rung = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.06, 0.06), woodMat);
+    rung.position.set(1.5, i*0.75+0.5, 1.2); g.add(rung);
+  }
+  for (let s of [-1,1]) {
+    const ls = new THREE.Mesh(new THREE.BoxGeometry(0.06, 5, 0.06), woodMat);
+    ls.position.set(1.5+s*0.4, 2.5, 1.2); g.add(ls);
+  }
+  g.position.set(x, 0, z); scene.add(g);
+}
+buildObsPost(-20, -16);
+
+// === PARTICLES ===
+const particleCount = 350;
+const pGeo = new THREE.BufferGeometry();
+const pPositions = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+  pPositions[i*3] = (Math.random()-0.5)*60;
+  pPositions[i*3+1] = Math.random()*12+0.5;
+  pPositions[i*3+2] = (Math.random()-0.5)*40;
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xb0a888, size: 0.22, transparent: true, opacity: 0.35, sizeAttenuation: true }));
+scene.add(particles);
+
+// Build terrain
+buildTerrain();
+
+// ==========================================
+// CAMERA CONTROLS
+// ==========================================
+let isDragging = false, prevMouse = { x: 0, y: 0 };
+let sph = { theta: Math.PI/4, phi: Math.PI/3, radius: 45 };
+
+function updateCam() {
+  camera.position.set(
+    sph.radius * Math.sin(sph.phi) * Math.sin(sph.theta),
+    sph.radius * Math.cos(sph.phi),
+    sph.radius * Math.sin(sph.phi) * Math.cos(sph.theta)
+  );
+  camera.lookAt(0, 0, 0);
+}
+updateCam();
+
+renderer.domElement.addEventListener('mousedown', e => { isDragging = true; prevMouse = { x: e.clientX, y: e.clientY }; });
+renderer.domElement.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  sph.theta -= (e.clientX - prevMouse.x) * 0.005;
+  sph.phi = Math.max(0.3, Math.min(Math.PI/2.1, sph.phi + (e.clientY - prevMouse.y) * 0.005));
+  prevMouse = { x: e.clientX, y: e.clientY };
+  updateCam();
+});
+renderer.domElement.addEventListener('mouseup', () => isDragging = false);
+renderer.domElement.addEventListener('mouseleave', () => isDragging = false);
+renderer.domElement.addEventListener('wheel', e => { sph.radius = Math.max(15, Math.min(70, sph.radius + e.deltaY * 0.05)); updateCam(); });
+
+// Touch
+renderer.domElement.addEventListener('touchstart', e => { if (e.touches.length===1) { isDragging=true; prevMouse={x:e.touches[0].clientX, y:e.touches[0].clientY}; }});
+renderer.domElement.addEventListener('touchmove', e => {
+  if (!isDragging||e.touches.length!==1) return; e.preventDefault();
+  sph.theta -= (e.touches[0].clientX - prevMouse.x) * 0.005;
+  sph.phi = Math.max(0.3, Math.min(Math.PI/2.1, sph.phi + (e.touches[0].clientY - prevMouse.y) * 0.005));
+  prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; updateCam();
+}, { passive: false });
+renderer.domElement.addEventListener('touchend', () => isDragging = false);
+
+// ==========================================
+// MARKERS (HTML overlay)
+// ==========================================
+const markerLayer = document.getElementById('markerLayer');
+const markerEls = infoPoints.map(pt => {
+  const el = document.createElement('div');
+  el.className = 'point-marker';
+  el.innerHTML = `<div class="marker-dot"><div class="marker-ring"></div></div><div class="marker-tooltip">${pt.title}</div>`;
+  el.addEventListener('click', () => openPanel(pt));
+  markerLayer.appendChild(el);
+  return { el, pt };
+});
+
+function updateMarkers() {
+  markerEls.forEach(({ el, pt }) => {
+    const v = new THREE.Vector3(pt.pos.x, pt.pos.y, pt.pos.z).project(camera);
+    if (v.z > 1) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    el.style.transform = `translate(${(v.x*0.5+0.5)*window.innerWidth-9}px, ${(-v.y*0.5+0.5)*window.innerHeight-9}px)`;
+  });
+}
+
+// ==========================================
+// INFO PANEL
+// ==========================================
+const infoPanel = document.getElementById('infoPanel');
+const panelHeader = document.getElementById('panelHeader');
+const panelBody = document.getElementById('panelBody');
+
+function openPanel(pt) {
+  // Header
+  const subjTags = pt.subjects.map(s => {
+    const labels = { history:'History', ela:'ELA', science:'Science', math:'Math', tech:'Technology' };
+    return `<span class="panel-subj-tag ${s}">${labels[s]}</span>`;
+  }).join('');
+
+  panelHeader.innerHTML = `
+    <button class="panel-close" onclick="closeInfoPanel()">✕</button>
+    <div class="panel-number">0${pt.id}</div>
+    <h2>${pt.title}</h2>
+    <div class="panel-date">${pt.date}</div>
+    <div class="panel-subjects">${subjTags}</div>
+  `;
+
+  // Body
+  const paragraphs = pt.paragraphs.map(p => `<p>${p}</p>`).join('');
+  const stats = Object.entries(pt.stats).map(([k,v]) => `<div class="stat-row"><span class="stat-label">${k}</span><span class="stat-value">${v}</span></div>`).join('');
+  const vocab = pt.vocabulary.map(v => `<div class="vocab-word"><strong>${v.word}</strong><span>${v.def}</span></div>`).join('');
+
+  panelBody.innerHTML = `
+    ${paragraphs}
+    <div class="think-about">
+      <div class="label">✏ Think &amp; Write About It</div>
+      <p>${pt.thinkAbout}</p>
+    </div>
+    <div class="panel-stats">
+      <div class="stats-title">By the Numbers</div>
+      ${stats}
+    </div>
+    <div class="vocabulary">
+      <div class="label">📖 Vocabulary</div>
+      ${vocab}
+    </div>
+  `;
+
+  infoPanel.classList.add('active');
+
+  // Highlight tab
+  document.querySelectorAll('.point-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.querySelector(`.point-tab[data-point="${pt.id-1}"]`);
+  if (tab) tab.classList.add('active');
+
+  // Highlight subject pills
+  document.querySelectorAll('.subject-pill').forEach(p => {
+    p.classList.toggle('active', pt.subjects.includes(p.dataset.subj));
+  });
+}
+
+function closeInfoPanel() {
+  infoPanel.classList.remove('active');
+  document.querySelectorAll('.point-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.subject-pill').forEach(p => p.classList.add('active'));
+}
+
+// Tab clicks
+document.querySelectorAll('.point-tab').forEach(tab => {
+  tab.addEventListener('click', () => openPanel(infoPoints[parseInt(tab.dataset.point)]));
+});
+
+// ==========================================
+// INTRO FLOW
+// ==========================================
+document.getElementById('enterBtn').addEventListener('click', () => {
+  document.getElementById('introScreen').classList.add('fade-out');
+  setTimeout(() => {
+    document.getElementById('introScreen').style.display = 'none';
+    document.getElementById('hudTop').style.opacity = '1';
+    document.getElementById('hudBottom').style.opacity = '1';
+    document.getElementById('hint').style.opacity = '1';
+  }, 600);
+});
+
+// ==========================================
+// ANIMATION LOOP
+// ==========================================
+let time = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.005;
+
+  // Particles drift
+  const pp = particles.geometry.attributes.position;
+  for (let i = 0; i < pp.count; i++) {
+    let y = pp.getY(i) + 0.01;
+    if (y > 12) y = 0.5;
+    pp.setY(i, y);
+    pp.setX(i, pp.getX(i) + Math.sin(time + i) * 0.004);
+  }
+  pp.needsUpdate = true;
+
+  fogGlow.position.x = -10 + Math.sin(time * 0.5) * 5;
+  fogGlow.intensity = 0.45 + Math.sin(time) * 0.06;
+
+  updateMarkers();
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

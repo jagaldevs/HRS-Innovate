@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shakespeare's Globe Theatre — Interactive 3D English Diorama</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@200;300;400;500;600&display=swap');
+
+  :root {
+    --timber: #6a4a2a;
+    --cream: #f0e8d0;
+    --panel-bg: rgba(255,252,248,0.97);
+    --text-dark: #1a1a2e;
+    --text-mid: #3a3a50;
+    --text-light: #6a6a80;
+    --accent-ela: #2a6a9a;
+    --accent-history: #a05030;
+    --accent-math: #7a4a9a;
+    --accent-drama: #9a2a5a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1810; color: #e8e0d0; font-family: 'Outfit', sans-serif;
+    overflow: hidden; height: 100vh; width: 100vw; cursor: grab;
+  }
+  body:active { cursor: grabbing; }
+  canvas { display: block; }
+
+  /* INTRO */
+  .intro-screen {
+    position: fixed; inset: 0; z-index: 200;
+    background: linear-gradient(135deg, #1a1810, #2a2018);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 1.5s ease;
+  }
+  .intro-screen.fade-out { opacity: 0; pointer-events: none; }
+  .intro-screen .icon { font-size: 72px; opacity: 0; animation: introFade 1.5s ease forwards 0.3s; }
+  .intro-screen h1 {
+    font-family: 'Crimson Pro', serif; font-size: 38px; font-weight: 700;
+    color: var(--cream); margin-top: 16px; letter-spacing: 1px;
+    opacity: 0; animation: introFade 1.5s ease forwards 0.6s;
+  }
+  .intro-screen .tagline {
+    font-size: 13px; letter-spacing: 6px; text-transform: uppercase;
+    color: rgba(240,232,208,0.3); margin-top: 8px;
+    opacity: 0; animation: introFade 1.5s ease forwards 1s;
+    font-family: 'Crimson Pro', serif; font-style: italic;
+  }
+  .intro-screen .enter-btn {
+    margin-top: 36px; padding: 14px 40px; background: none;
+    border: 1px solid rgba(240,232,208,0.3); color: var(--cream);
+    font-family: 'Outfit', sans-serif; font-size: 13px; letter-spacing: 5px;
+    text-transform: uppercase; cursor: pointer; border-radius: 4px;
+    opacity: 0; animation: introFade 1.5s ease forwards 1.4s; transition: all 0.4s;
+  }
+  .intro-screen .enter-btn:hover { background: rgba(240,232,208,0.08); }
+  @keyframes introFade { to { opacity: 1; } }
+
+  /* HUD */
+  .hud-top {
+    position: fixed; top: 0; left: 0; right: 0; height: 80px;
+    background: linear-gradient(to bottom, rgba(90,130,180,0.45), transparent);
+    z-index: 10; pointer-events: none;
+    display: flex; align-items: flex-start; justify-content: space-between; padding: 18px 28px;
+  }
+  .hud-title h1 {
+    font-family: 'Crimson Pro', serif; font-size: 22px; font-weight: 700;
+    color: #fff; letter-spacing: 2px; text-transform: uppercase;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+  .hud-title .sub { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .hud-subjects { display: flex; gap: 8px; pointer-events: auto; }
+  .subject-pill {
+    padding: 4px 12px; border-radius: 16px; font-size: 9px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7); cursor: default;
+  }
+
+  .hud-bottom {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+    background: linear-gradient(to top, rgba(40,35,20,0.7), transparent);
+    z-index: 10; display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 16px; gap: 5px;
+  }
+  .point-tab {
+    padding: 7px 14px; background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+    font-size: 10px; letter-spacing: 1.5px; color: rgba(255,255,255,0.6);
+    cursor: pointer; transition: all 0.35s; text-transform: uppercase; white-space: nowrap;
+  }
+  .point-tab:hover, .point-tab.active {
+    background: rgba(255,255,255,0.25); border-color: #fff; color: #fff; transform: translateY(-2px);
+  }
+  .point-tab .tab-num { font-family: 'Crimson Pro', serif; font-weight: 700; font-size: 13px; margin-right: 5px; }
+  .controls-hint {
+    position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%);
+    z-index: 10; font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); pointer-events: none;
+  }
+
+  /* PANEL */
+  .info-panel {
+    position: fixed; right: -460px; top: 0; width: 440px; height: 100vh;
+    background: var(--panel-bg); border-left: 1px solid rgba(0,0,0,0.06);
+    z-index: 50; transition: right 0.6s cubic-bezier(0.22,1,0.36,1);
+    backdrop-filter: blur(30px); box-shadow: -30px 0 80px rgba(0,0,0,0.15);
+    overflow-y: auto; overflow-x: hidden;
+  }
+  .info-panel.active { right: 0; }
+  .panel-header {
+    position: relative; padding: 48px 34px 26px;
+    background: linear-gradient(135deg, rgba(42,106,154,0.05), transparent);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .panel-close {
+    position: absolute; top: 16px; right: 16px; width: 34px; height: 34px;
+    background: none; border: 1px solid rgba(0,0,0,0.1); color: #888;
+    font-size: 15px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; border-radius: 50%; transition: all 0.3s;
+  }
+  .panel-close:hover { border-color: #333; color: #333; }
+  .panel-number {
+    font-family: 'Crimson Pro', serif; font-size: 68px; font-weight: 700;
+    color: rgba(0,0,0,0.04); line-height: 1; position: absolute; top: 18px; left: 34px;
+  }
+  .panel-header h2 { font-family: 'Crimson Pro', serif; font-size: 24px; font-weight: 600; color: var(--text-dark); line-height: 1.2; position: relative; z-index: 1; }
+  .panel-header .panel-subtitle { font-size: 14px; color: var(--text-light); margin-top: 4px; font-family: 'Crimson Pro', serif; font-style: italic; }
+  .panel-curriculum { margin-top: 10px; padding: 6px 12px; background: rgba(42,106,154,0.07); border-radius: 4px; display: inline-block; }
+  .panel-curriculum code { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--accent-ela); font-family: 'Outfit', sans-serif; }
+  .panel-curriculum span { font-size: 11px; color: var(--text-light); margin-left: 6px; }
+  .panel-subjects { display: flex; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
+  .panel-subj-tag { padding: 3px 10px; border-radius: 12px; font-size: 9px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
+  .panel-subj-tag.ela { background: rgba(42,106,154,0.08); color: var(--accent-ela); }
+  .panel-subj-tag.history { background: rgba(160,80,48,0.08); color: var(--accent-history); }
+  .panel-subj-tag.math { background: rgba(122,74,154,0.08); color: var(--accent-math); }
+  .panel-subj-tag.drama { background: rgba(154,42,90,0.08); color: var(--accent-drama); }
+
+  .panel-body { padding: 24px 34px 40px; }
+  .panel-body p { font-family: 'Crimson Pro', serif; font-size: 16px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
+  .panel-body .quote-block {
+    padding: 14px 18px; margin: 14px 0; border-left: 3px solid var(--accent-drama);
+    background: rgba(154,42,90,0.04); border-radius: 0 6px 6px 0;
+    font-family: 'Crimson Pro', serif; font-style: italic; font-size: 15px;
+    color: #5a2a3a; line-height: 1.7;
+  }
+  .think-about { margin-top: 18px; padding: 16px 18px; background: rgba(42,106,154,0.05); border-left: 3px solid var(--accent-ela); border-radius: 0 6px 6px 0; }
+  .think-about .label { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent-ela); margin-bottom: 6px; }
+  .think-about p { font-size: 13px; line-height: 1.7; color: #2a5070; margin: 0; font-family: 'Outfit', sans-serif; }
+  .panel-stats { margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 14px; }
+  .panel-stats .stats-title { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,0.03); }
+  .stat-label { font-size: 12px; color: var(--text-light); letter-spacing: 1px; }
+  .stat-value { font-family: 'Crimson Pro', serif; font-size: 16px; font-weight: 600; color: var(--text-dark); }
+  .vocabulary { margin-top: 18px; padding: 16px 18px; background: rgba(42,106,154,0.04); border-radius: 6px; }
+  .vocabulary .label { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent-ela); margin-bottom: 8px; }
+  .vocab-word { margin-bottom: 6px; }
+  .vocab-word strong { font-family: 'Crimson Pro', serif; font-size: 15px; color: var(--text-dark); }
+  .vocab-word span { font-size: 12px; color: var(--text-light); display: block; margin-top: 1px; }
+
+  /* MARKERS */
+  .point-marker { position: absolute; pointer-events: auto; cursor: pointer; z-index: 5; }
+  .marker-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: radial-gradient(circle, #4a90d0, #2a60a0);
+    border: 3px solid #fff; box-shadow: 0 0 12px rgba(74,144,208,0.3), 0 2px 8px rgba(0,0,0,0.2);
+    animation: mp 3s ease-in-out infinite; position: relative;
+  }
+  .marker-ring { position: absolute; top: -8px; left: -8px; width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(74,144,208,0.3); animation: re 3s ease-in-out infinite; }
+  .marker-tooltip {
+    position: absolute; left: 34px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; padding: 6px 14px; background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.08); border-radius: 4px;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dark); opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(-50%) translateX(5px); pointer-events: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+  .point-marker:hover .marker-tooltip { opacity: 1; transform: translateY(-50%) translateX(0); }
+  .point-marker:hover .marker-dot { transform: scale(1.3); transition: transform 0.3s; }
+  @keyframes mp { 0%,100% { box-shadow: 0 0 8px rgba(74,144,208,0.2), 0 2px 6px rgba(0,0,0,0.15); } 50% { box-shadow: 0 0 20px rgba(74,144,208,0.4), 0 2px 10px rgba(0,0,0,0.2); } }
+  @keyframes re { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.5); opacity: 0; } }
+
+  @media (max-width: 768px) { .info-panel { width: 100%; right: -100%; } .hud-subjects { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="intro-screen" id="introScreen">
+  <div class="icon">🎭</div>
+  <h1>The Globe Theatre</h1>
+  <div class="tagline">"All the world's a stage" · Romeo &amp; Juliet</div>
+  <button class="enter-btn" id="enterBtn">Enter the Theatre</button>
+</div>
+
+<div class="hud-top" id="hudTop" style="opacity:0;transition:opacity 1s;">
+  <div class="hud-title">
+    <h1>Shakespeare's Globe Theatre</h1>
+    <div class="sub">AC v9 · Year 8–9 English · Literature & Language</div>
+  </div>
+  <div class="hud-subjects">
+    <div class="subject-pill">English</div>
+    <div class="subject-pill">History</div>
+    <div class="subject-pill">Drama</div>
+  </div>
+</div>
+
+<div class="controls-hint" id="hint" style="opacity:0;transition:opacity 1s;">Drag to rotate · Scroll to zoom · Click markers or tabs to learn</div>
+
+<div class="hud-bottom" id="hudBottom" style="opacity:0;transition:opacity 1s;">
+  <div class="point-tab" data-point="0"><span class="tab-num">01</span>Balcony Scene</div>
+  <div class="point-tab" data-point="1"><span class="tab-num">02</span>Groundlings</div>
+  <div class="point-tab" data-point="2"><span class="tab-num">03</span>Stagecraft</div>
+  <div class="point-tab" data-point="3"><span class="tab-num">04</span>The Prologue</div>
+  <div class="point-tab" data-point="4"><span class="tab-num">05</span>Wordplay</div>
+</div>
+
+<div class="info-panel" id="infoPanel">
+  <div class="panel-header" id="panelHeader"></div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<div id="canvas-container" style="position:fixed;inset:0;z-index:1;"></div>
+<div id="markerLayer" style="position:fixed;inset:0;z-index:5;pointer-events:none;"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const infoPoints = [
+  {
+    id:1, title:"The Balcony Scene", subtitle:"Figurative Language in Action",
+    acCode:"AC9E8LA02 / AC9E9LA02",
+    acDesc:"Understand how layers of meaning are created using literary devices such as simile, metaphor, allusion and evocative vocabulary",
+    subjects:["ela","drama"],
+    pos:{x:0,y:8,z:-4},
+    paragraphs:[
+      "The balcony scene from Romeo and Juliet (Act 2, Scene 2) is one of the most famous moments in all of literature — and it's packed with figurative language. When Romeo sees Juliet above him, he doesn't just say 'she's pretty.' He uses a sustained metaphor comparing her to the sun, the stars, and celestial light. He says her eyes are so bright that the stars would ask them to shine in their place.",
+      "This isn't just poetic decoration — the light and dark imagery runs through the entire play. Romeo and Juliet only meet at night: the party, the balcony, the tomb. Their love exists in darkness, hidden from their warring families. Shakespeare uses this figurative language pattern to foreshadow the tragedy: beautiful things that can only survive in the dark are doomed when daylight comes."
+    ],
+    thinkAbout:"Shakespeare compares Juliet to the sun. Identify this as a type of figurative language (metaphor, simile, or personification?). Then try writing your own: describe someone important to you using an extended metaphor from nature — the ocean, a storm, a season. Sustain the metaphor for at least 4 sentences, with each sentence developing the comparison further.",
+    stats:{"Act & Scene":"Act 2, Scene 2","Lines in scene":"~190","Metaphors used":"12+"},
+    vocabulary:[
+      {word:"Extended metaphor",def:"A metaphor that continues across multiple lines or an entire passage"},
+      {word:"Foreshadowing",def:"Hints or clues about events that will happen later in the story"},
+      {word:"Imagery",def:"Vivid, descriptive language that appeals to the senses (sight, sound, touch, etc.)"}
+    ]
+  },
+  {
+    id:2, title:"The Groundlings", subtitle:"Audience, Purpose & Perspective",
+    acCode:"AC9E9LE05",
+    acDesc:"Analyse the effect of text structures, language features and literary devices including symbolism and intertextual references",
+    subjects:["ela","history"],
+    pos:{x:5,y:2,z:5},
+    paragraphs:[
+      "The Globe Theatre held about 3,000 people, but they weren't all alike. The 'groundlings' — about 800 of them — stood in the open yard in front of the stage, paying just one penny for entry (roughly $2 today). They were workers, apprentices, and labourers. Above them sat wealthier merchants and nobles in covered galleries, paying up to sixpence.",
+      "Shakespeare had to write for all of them simultaneously. This is why his plays mix sophisticated poetry with crude jokes, philosophical speeches with slapstick comedy, and noble characters with comic servants. He was doing what modern screenwriters do — layering meaning so that different audiences get different things from the same scene. A groundling laughs at the physical comedy; a noble admires the wordplay. Both are entertained."
+    ],
+    thinkAbout:"Think about a movie, TV show, or game that works on multiple levels — kids enjoy it one way, adults enjoy it differently (e.g., Shrek, The Simpsons). Analyse how the creators layered meaning for different audiences, just as Shakespeare did. Write a paragraph comparing their techniques to Shakespeare's approach at the Globe.",
+    stats:{"Capacity":"~3,000","Groundling cost":"1 penny (~$2)","Gallery cost":"Up to 6 pence"},
+    vocabulary:[
+      {word:"Groundling",def:"A theatregoer who stood in the open yard — the cheapest area of the Globe"},
+      {word:"Audience positioning",def:"How a writer uses language to influence the way different audiences respond"},
+      {word:"Register",def:"The level of formality in language — Shakespeare shifts register for different characters"}
+    ]
+  },
+  {
+    id:3, title:"Stagecraft Without Technology", subtitle:"Language as Special Effects",
+    acCode:"AC9E8LA03 / AC9E9LA03",
+    acDesc:"Examine how authors adapt and subvert text structures and language features by experimenting with spoken, written, visual and multimodal elements",
+    subjects:["ela","drama","history"],
+    pos:{x:-6,y:5,z:0},
+    paragraphs:[
+      "The Globe had no lighting rigs, no sound systems, no CGI, and no curtain. Plays were performed in broad daylight, in the open air. So how did Shakespeare create night scenes, battlefields, storms, and magical forests? With words. When a character says 'look, the morn in russet mantle clad walks o'er the dew of yon high eastward hill,' the audience knows it's dawn — even though the actual sun is right above them.",
+      "This meant Shakespeare's language had to do the work that technology does today. His stage directions are minimal, but his dialogue is rich with sensory details that build the world. The famous storm in The Tempest, the moonlit forest in A Midsummer Night's Dream, the dark castle in Macbeth — all created entirely through language. This is a masterclass in how powerful writing can be when it's the only tool you have."
+    ],
+    thinkAbout:"Choose a setting (a storm at sea, a haunted house, a busy city at night). Write a short monologue (8–10 lines) that uses only language — no stage directions, no props — to make the audience feel they are in that place. Focus on sensory details: what can be seen, heard, smelled, and felt?",
+    stats:{"Stage size":"~12m wide","Props":"Minimal","Lighting":"Daylight only"},
+    vocabulary:[
+      {word:"Stagecraft",def:"The techniques of writing and producing theatrical performances"},
+      {word:"Soliloquy",def:"A speech in which a character speaks their thoughts aloud, alone on stage"},
+      {word:"Sensory language",def:"Words and phrases that appeal to the five senses to create vivid experiences"}
+    ]
+  },
+  {
+    id:4, title:"The Prologue", subtitle:"Foreshadowing & Sonnet Structure",
+    acCode:"AC9E9LE04 / AC9E9LE02",
+    acDesc:"Analyse and evaluate the aesthetic qualities and appeal of an author's literary style; present a personal response comparing initial impressions and subsequent analysis",
+    subjects:["ela","math"],
+    pos:{x:0,y:10,z:2},
+    paragraphs:[
+      "Romeo and Juliet begins with a Prologue — a 14-line introduction spoken by a narrator called the Chorus. But this isn't just any 14 lines. It's a sonnet: 3 quatrains (groups of 4 lines) plus a final couplet (2 lines), with the rhyme scheme ABAB CDCD EFEF GG, written in iambic pentameter (10 syllables per line, alternating unstressed and stressed beats: da-DUM da-DUM da-DUM da-DUM da-DUM).",
+      "What makes this Prologue extraordinary is that it tells you the ending before the play even starts. It reveals that Romeo and Juliet will die. Shakespeare deliberately removes the suspense of 'what happens?' so the audience focuses on 'how and why does it happen?' This is a sophisticated structural choice — the audience watches the entire play knowing the ending, which transforms every hopeful moment into dramatic irony."
+    ],
+    thinkAbout:"The Prologue is exactly 14 lines — a sonnet. Why might Shakespeare have chosen this particular poetic form to open a play about love? (Hint: what are sonnets traditionally about?) Count the syllables in the first line and verify it's iambic pentameter (10 syllables). Then try writing your own 4-line opening in iambic pentameter that introduces a modern story.",
+    stats:{"Lines":"Exactly 14 (sonnet)","Rhyme scheme":"ABAB CDCD EFEF GG","Syllables per line":"10 (iambic pentameter)"},
+    vocabulary:[
+      {word:"Sonnet",def:"A 14-line poem with a specific rhyme scheme, traditionally about love"},
+      {word:"Dramatic irony",def:"When the audience knows something the characters don't — creating tension"},
+      {word:"Iambic pentameter",def:"A rhythmic pattern of 10 syllables per line: da-DUM × 5"}
+    ]
+  },
+  {
+    id:5, title:"Elizabethan Wordplay", subtitle:"Vocabulary, Puns & the Evolution of English",
+    acCode:"AC9E9LA08",
+    acDesc:"Analyse how vocabulary choices contribute to style, mood and tone",
+    subjects:["ela","history"],
+    pos:{x:-4,y:3,z:6},
+    paragraphs:[
+      "Shakespeare invented over 1,700 words that we still use today. Words like 'lonely,' 'generous,' 'gloomy,' 'assassination,' 'eyeball,' and 'bedroom' didn't exist in English before he wrote them. He created them by combining existing words, turning nouns into verbs, or adding prefixes and suffixes. When he couldn't find the right word, he simply made one up — and it stuck.",
+      "His plays are also packed with puns — words that sound alike but have different meanings. In Romeo and Juliet, the dying Mercutio says he'll be 'a grave man' tomorrow — 'grave' meaning both 'serious' and 'a burial site.' These puns weren't just clever — they delighted the groundlings, who loved wordplay. Understanding Shakespeare's vocabulary choices helps us see how language is alive: always changing, always being invented, and always shaped by the people who use it."
+    ],
+    thinkAbout:"Shakespeare turned the noun 'elbow' into a verb ('he elbowed his way through'). This technique — changing a word's function — is called conversion or zero derivation. Find 3 examples of nouns that we now commonly use as verbs (e.g., 'to Google,' 'to text'). What does this tell us about how language continues to evolve, just as it did in Shakespeare's time?",
+    stats:{"Words invented":"~1,700+","Plays written":"37","Vocabulary size":"~30,000 words"},
+    vocabulary:[
+      {word:"Pun",def:"A joke that exploits different meanings of a word or words that sound alike"},
+      {word:"Etymology",def:"The study of the origin and history of words and how their meanings have changed"},
+      {word:"Neologism",def:"A newly coined word or expression — Shakespeare was a prolific creator of these"}
+    ]
+  }
+];
+
+// THREE.JS
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x82b4d8);
+scene.fog = new THREE.Fog(0x82b4d8, 60, 150);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+container.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xe8e0d0, 0.75));
+const sun = new THREE.DirectionalLight(0xfff8e0, 1.0);
+sun.position.set(20, 30, 15); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-30; sun.shadow.camera.right=30;
+sun.shadow.camera.top=30; sun.shadow.camera.bottom=-30;
+scene.add(sun);
+scene.add(new THREE.HemisphereLight(0x87ceeb, 0x8a7a60, 0.35));
+const warm = new THREE.PointLight(0xffaa60, 0.4, 30);
+warm.position.set(0, 8, 0); scene.add(warm);
+
+// MATERIALS
+const timberMat = new THREE.MeshStandardMaterial({ color: 0x6a4a2a, roughness: 0.8, metalness: 0.05 });
+const timberDark = new THREE.MeshStandardMaterial({ color: 0x4a3018, roughness: 0.85 });
+const plasterMat = new THREE.MeshStandardMaterial({ color: 0xf0e8d0, roughness: 0.9 });
+const thatchMat = new THREE.MeshStandardMaterial({ color: 0x8a7a50, roughness: 1.0 });
+const stageMat = new THREE.MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.7 });
+const groundMat = new THREE.MeshStandardMaterial({ color: 0xa09060, roughness: 0.95 });
+const flagMat = new THREE.MeshStandardMaterial({ color: 0xcc3030, roughness: 0.6 });
+
+// GROUND
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(100,100).rotateX(-Math.PI/2), groundMat);
+ground.receiveShadow = true; scene.add(ground);
+
+// THEATRE STRUCTURE — polygonal walls (20-sided ≈ circular)
+const sides = 20, radius = 12, wallH = 10;
+const theatreGroup = new THREE.Group();
+
+for (let i = 0; i < sides; i++) {
+  const a1 = (i/sides)*Math.PI*2, a2 = ((i+1)/sides)*Math.PI*2;
+  const x1 = Math.cos(a1)*radius, z1 = Math.sin(a1)*radius;
+  const x2 = Math.cos(a2)*radius, z2 = Math.sin(a2)*radius;
+  const mx = (x1+x2)/2, mz = (z1+z2)/2;
+  const segW = Math.sqrt((x2-x1)**2+(z2-z1)**2);
+  const angle = Math.atan2(z2-z1, x2-x1);
+
+  // Lower wall (plaster between timber)
+  for (let level = 0; level < 3; level++) {
+    const yOff = level * wallH/3;
+    // Plaster panel
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(segW, wallH/3 - 0.15, 0.8), plasterMat);
+    panel.position.set(mx, yOff + wallH/6, mz);
+    panel.rotation.y = -angle;
+    panel.castShadow = true; panel.receiveShadow = true;
+    theatreGroup.add(panel);
+    // Timber frame
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(segW + 0.1, 0.15, 0.85), timberMat);
+    frame.position.set(mx, yOff, mz);
+    frame.rotation.y = -angle;
+    theatreGroup.add(frame);
+    // Cross timber
+    if (level < 2) {
+      const cross = new THREE.Mesh(new THREE.BoxGeometry(0.12, wallH/3, 0.85), timberMat);
+      cross.position.set(mx, yOff + wallH/6, mz);
+      cross.rotation.y = -angle;
+      theatreGroup.add(cross);
+    }
+  }
+  // Top beam
+  const topBeam = new THREE.Mesh(new THREE.BoxGeometry(segW + 0.1, 0.2, 0.9), timberMat);
+  topBeam.position.set(mx, wallH, mz);
+  topBeam.rotation.y = -angle;
+  theatreGroup.add(topBeam);
+}
+
+// THATCHED ROOF (angled ring)
+const roofInner = 9, roofOuter = 13.5;
+for (let i = 0; i < sides; i++) {
+  const a1 = (i/sides)*Math.PI*2, a2 = ((i+1)/sides)*Math.PI*2;
+  const pts = [
+    new THREE.Vector3(Math.cos(a1)*roofOuter, wallH + 0.5, Math.sin(a1)*roofOuter),
+    new THREE.Vector3(Math.cos(a2)*roofOuter, wallH + 0.5, Math.sin(a2)*roofOuter),
+    new THREE.Vector3(Math.cos(a2)*roofInner, wallH + 2.5, Math.sin(a2)*roofInner),
+    new THREE.Vector3(Math.cos(a1)*roofInner, wallH + 2.5, Math.sin(a1)*roofInner),
+  ];
+  const geo = new THREE.BufferGeometry();
+  const verts = new Float32Array([
+    pts[0].x,pts[0].y,pts[0].z, pts[1].x,pts[1].y,pts[1].z, pts[2].x,pts[2].y,pts[2].z,
+    pts[0].x,pts[0].y,pts[0].z, pts[2].x,pts[2].y,pts[2].z, pts[3].x,pts[3].y,pts[3].z
+  ]);
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+  const roofPanel = new THREE.Mesh(geo, thatchMat);
+  roofPanel.castShadow = true;
+  theatreGroup.add(roofPanel);
+}
+
+// STAGE (thrust stage extending into the yard)
+const stageGeo = new THREE.BoxGeometry(12, 1.2, 8);
+const stage = new THREE.Mesh(stageGeo, stageMat);
+stage.position.set(0, 0.6, -2);
+stage.castShadow = true; stage.receiveShadow = true;
+theatreGroup.add(stage);
+
+// Stage pillars
+for (let px of [-4, 4]) {
+  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 7, 12), timberMat);
+  pillar.position.set(px, 4.1, -4);
+  pillar.castShadow = true;
+  theatreGroup.add(pillar);
+}
+
+// Stage roof (the "heavens")
+const heavens = new THREE.Mesh(new THREE.BoxGeometry(10, 0.3, 6), timberDark);
+heavens.position.set(0, 7.6, -4);
+heavens.castShadow = true;
+theatreGroup.add(heavens);
+
+// Balcony (above stage — the "above")
+const balcony = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 3), timberMat);
+balcony.position.set(0, 5.5, -6.5);
+theatreGroup.add(balcony);
+// Balcony railing
+const railing = new THREE.Mesh(new THREE.BoxGeometry(10, 0.8, 0.1), timberMat);
+railing.position.set(0, 6.1, -5.1);
+theatreGroup.add(railing);
+
+// Tiring house wall (back of stage)
+const tiringWall = new THREE.Mesh(new THREE.BoxGeometry(12, wallH, 0.6), plasterMat);
+tiringWall.position.set(0, wallH/2, -8);
+tiringWall.castShadow = true;
+theatreGroup.add(tiringWall);
+// Tiring house timber frames
+for (let ty of [0, wallH/3, wallH*2/3, wallH]) {
+  const tb = new THREE.Mesh(new THREE.BoxGeometry(12.2, 0.15, 0.65), timberMat);
+  tb.position.set(0, ty, -8);
+  theatreGroup.add(tb);
+}
+// Doors
+for (let dx of [-3, 3]) {
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3, 0.1), timberDark);
+  door.position.set(dx, 1.7, -7.65);
+  theatreGroup.add(door);
+}
+
+// Yard floor (where groundlings stand)
+const yard = new THREE.Mesh(
+  new THREE.CircleGeometry(9, 20).rotateX(-Math.PI/2),
+  new THREE.MeshStandardMaterial({ color: 0x8a7a50, roughness: 1 })
+);
+yard.position.y = 0.02;
+theatreGroup.add(yard);
+
+// FLAG on top
+const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4, 6), timberMat);
+flagPole.position.set(0, wallH + 4, -8);
+theatreGroup.add(flagPole);
+const flag = new THREE.Mesh(new THREE.PlaneGeometry(2, 1.2), flagMat);
+flag.position.set(1, wallH + 5.2, -8);
+theatreGroup.add(flag);
+
+// Gallery seating (tiered benches along walls)
+for (let level = 0; level < 3; level++) {
+  const benchR = 10 - level * 0.8;
+  const benchY = 1.2 + level * wallH/3;
+  for (let i = 2; i < sides - 2; i++) {
+    const a = (i/sides)*Math.PI*2;
+    const bx = Math.cos(a)*benchR, bz = Math.sin(a)*benchR;
+    const bench = new THREE.Mesh(
+      new THREE.BoxGeometry(3.2, 0.15, 1.5),
+      new THREE.MeshStandardMaterial({ color: 0x7a5a2a, roughness: 0.8 })
+    );
+    bench.position.set(bx, benchY, bz);
+    bench.rotation.y = -a + Math.PI;
+    theatreGroup.add(bench);
+  }
+}
+
+scene.add(theatreGroup);
+
+// Surrounding buildings (simple boxes)
+[[-25,0,10],[25,0,-5],[-20,0,-20],[18,0,20]].forEach(([x,y,z])=>{
+  const h = 5+Math.random()*4;
+  const b = new THREE.Mesh(
+    new THREE.BoxGeometry(6+Math.random()*4, h, 6+Math.random()*4),
+    new THREE.MeshStandardMaterial({ color: 0xc8b888, roughness: 0.9 })
+  );
+  b.position.set(x, h/2, z); b.castShadow = true; scene.add(b);
+  // Roof
+  const roof = new THREE.Mesh(
+    new THREE.ConeGeometry(5, 3, 4).rotateY(Math.PI/4),
+    thatchMat
+  );
+  roof.position.set(x, h+1.5, z); scene.add(roof);
+});
+
+// CAMERA
+let isDrag=false, prev={x:0,y:0};
+let sph={theta:Math.PI/3, phi:Math.PI/3.5, radius:32};
+function updateCam(){
+  camera.position.set(
+    sph.radius*Math.sin(sph.phi)*Math.sin(sph.theta),
+    sph.radius*Math.cos(sph.phi),
+    sph.radius*Math.sin(sph.phi)*Math.cos(sph.theta)
+  );
+  camera.lookAt(0,4,0);
+}
+updateCam();
+
+renderer.domElement.addEventListener('mousedown',e=>{isDrag=true;prev={x:e.clientX,y:e.clientY};});
+renderer.domElement.addEventListener('mousemove',e=>{if(!isDrag)return;sph.theta-=(e.clientX-prev.x)*0.005;sph.phi=Math.max(0.3,Math.min(Math.PI/2.1,sph.phi+(e.clientY-prev.y)*0.005));prev={x:e.clientX,y:e.clientY};updateCam();});
+renderer.domElement.addEventListener('mouseup',()=>isDrag=false);
+renderer.domElement.addEventListener('mouseleave',()=>isDrag=false);
+renderer.domElement.addEventListener('wheel',e=>{sph.radius=Math.max(14,Math.min(60,sph.radius+e.deltaY*0.04));updateCam();});
+renderer.domElement.addEventListener('touchstart',e=>{if(e.touches.length===1){isDrag=true;prev={x:e.touches[0].clientX,y:e.touches[0].clientY};}});
+renderer.domElement.addEventListener('touchmove',e=>{if(!isDrag||e.touches.length!==1)return;e.preventDefault();sph.theta-=(e.touches[0].clientX-prev.x)*0.005;sph.phi=Math.max(0.3,Math.min(Math.PI/2.1,sph.phi+(e.touches[0].clientY-prev.y)*0.005));prev={x:e.touches[0].clientX,y:e.touches[0].clientY};updateCam();},{passive:false});
+renderer.domElement.addEventListener('touchend',()=>isDrag=false);
+
+// MARKERS
+const markerLayer=document.getElementById('markerLayer');
+const markerEls=infoPoints.map(pt=>{
+  const el=document.createElement('div');
+  el.className='point-marker';
+  el.innerHTML=`<div class="marker-dot"><div class="marker-ring"></div></div><div class="marker-tooltip">${pt.title}</div>`;
+  el.addEventListener('click',()=>openPanel(pt));
+  markerLayer.appendChild(el);
+  return {el,pt};
+});
+function updateMarkers(){
+  markerEls.forEach(({el,pt})=>{
+    const v=new THREE.Vector3(pt.pos.x,pt.pos.y,pt.pos.z).project(camera);
+    if(v.z>1){el.style.display='none';return;}
+    el.style.display='block';
+    el.style.transform=`translate(${(v.x*0.5+0.5)*window.innerWidth-11}px,${(-v.y*0.5+0.5)*window.innerHeight-11}px)`;
+  });
+}
+
+// PANEL
+function openPanel(pt){
+  const subjs=pt.subjects.map(s=>{const l={ela:'English',history:'History',math:'Maths',drama:'Drama'};return`<span class="panel-subj-tag ${s}">${l[s]}</span>`;}).join('');
+  document.getElementById('panelHeader').innerHTML=`
+    <button class="panel-close" onclick="document.getElementById('infoPanel').classList.remove('active');document.querySelectorAll('.point-tab').forEach(t=>t.classList.remove('active'));">✕</button>
+    <div class="panel-number">0${pt.id}</div>
+    <h2>${pt.title}</h2>
+    <div class="panel-subtitle">${pt.subtitle}</div>
+    <div class="panel-curriculum"><code>${pt.acCode}</code><span>— ${pt.acDesc}</span></div>
+    <div class="panel-subjects">${subjs}</div>`;
+  const paras=pt.paragraphs.map(p=>`<p>${p}</p>`).join('');
+  const stats=Object.entries(pt.stats).map(([k,v])=>`<div class="stat-row"><span class="stat-label">${k}</span><span class="stat-value">${v}</span></div>`).join('');
+  const vocab=pt.vocabulary.map(v=>`<div class="vocab-word"><strong>${v.word}</strong><span>${v.def}</span></div>`).join('');
+  document.getElementById('panelBody').innerHTML=`${paras}
+    <div class="think-about"><div class="label">✏ Read, Write &amp; Analyse</div><p>${pt.thinkAbout}</p></div>
+    <div class="panel-stats"><div class="stats-title">By the Numbers</div>${stats}</div>
+    <div class="vocabulary"><div class="label">📖 Key Vocabulary</div>${vocab}</div>`;
+  document.getElementById('infoPanel').classList.add('active');
+  document.querySelectorAll('.point-tab').forEach(t=>t.classList.remove('active'));
+  const tab=document.querySelector(`.point-tab[data-point="${pt.id-1}"]`);
+  if(tab)tab.classList.add('active');
+}
+
+document.querySelectorAll('.point-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>openPanel(infoPoints[parseInt(tab.dataset.point)]));
+});
+
+document.getElementById('enterBtn').addEventListener('click',()=>{
+  document.getElementById('introScreen').classList.add('fade-out');
+  setTimeout(()=>{
+    document.getElementById('introScreen').style.display='none';
+    document.getElementById('hudTop').style.opacity='1';
+    document.getElementById('hudBottom').style.opacity='1';
+    document.getElementById('hint').style.opacity='1';
+  },600);
+});
+
+// ANIMATE
+let time=0;
+function animate(){
+  requestAnimationFrame(animate);
+  time+=0.006;
+  // Gentle flag wave
+  flag.rotation.z = Math.sin(time*2)*0.15;
+  flag.position.x = 1 + Math.sin(time*2)*0.1;
+  warm.intensity = 0.35+Math.sin(time)*0.05;
+  updateMarkers();
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
+</body>
+</html>

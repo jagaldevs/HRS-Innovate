@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Innovation — Haileybury Rendall School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ===== INTRO SCREEN ===== -->
+  <div class="intro-screen" id="introScreen">
+    <img src="https://media.digistormhosting.com.au/h-au-vic-321-website/content/logos/02_Haileybury_WordmarkCrest-Landscape-RendallSchool_White.svg?v=1632136068" 
+         alt="Haileybury Rendall School" class="intro-logo" onerror="this.style.display='none'">
+    <div class="intro-title">Digital Innovation</div>
+    <div class="intro-subtitle">Innovation Centre workshops</div>
+    <div class="intro-by">Presented by Jack Galbraith · Head of Digital Innovation</div>
+    <button class="intro-enter" id="enterBtn">Enter</button>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div class="app" id="app">
+
+    <!-- Nav bar -->
+    <nav class="nav-bar">
+      <img src="https://media.digistormhosting.com.au/h-au-vic-321-website/content/logos/02_Haileybury_WordmarkCrest-Landscape-RendallSchool_White.svg?v=1632136068" 
+           alt="HRS" class="nav-logo" onerror="this.alt='HRS'">
+      <div class="nav-center">Haileybury Rendall School Innovation Centre</div>
+      <div class="nav-right">Jack Galbraith</div>
+    </nav>
+
+    <!-- Ring diagram section -->
+    <section class="ring-section">
+      <div class="ring-hint">
+        <h2>Digital Innovation</h2>
+        <p>Hover over segments to see connections · Click to explore detail</p>
+      </div>
+      <div class="ring-diagram" id="ringDiagram">
+        <svg viewBox="0 0 700 700" id="ringSvg"></svg>
+      </div>
+    </section>
+
+    <!-- Australian Curriculum alignment -->
+    <section class="section-below">
+      <h2>Australian Curriculum Alignment</h2>
+      <div class="section-sub">Critical &amp; Creative Thinking Framework</div>
+      <div class="cct-grid">
+        <div class="cct-card">
+          <div class="card-icon">🔍</div>
+          <h4>Inquiring</h4>
+          <p>Students develop questions, seek information from diverse sources, and evaluate evidence critically.</p>
+        </div>
+        <div class="cct-card">
+          <div class="card-icon">💡</div>
+          <h4>Generating</h4>
+          <p>Exploring and combining ideas to create innovative solutions. Imagine, prototype, iterate.</p>
+        </div>
+        <div class="cct-card">
+          <div class="card-icon">⚖️</div>
+          <h4>Analysing</h4>
+          <p>Interpreting concepts, drawing conclusions, and evaluating outcomes through systematic thinking.</p>
+        </div>
+        <div class="cct-card">
+          <div class="card-icon">🪞</div>
+          <h4>Reflecting</h4>
+          <p>Metacognition and knowledge transfer. What worked, what didn't, and how does this connect?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Proposal -->
+    <section class="section-proposal">
+      <h2>The Proposal</h2>
+      <p>Middle school students are offered one dedicated workshop day per semester, delivered as an immersive crash-course incursion run by Jack Galbraith.</p>
+      <p>This is purely from a digital innovation perspective, acknowledging the multipurpose nature of the broader school vision.</p>
+      <div class="proposal-highlight">One Day · One Workshop · Per Semester</div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>Haileybury Rendall School · Digital Innovation · 2026</p>
+      <div class="acknowledgment">In the spirit of reconciliation, Haileybury acknowledges the Traditional Custodians of country throughout Australia and their connections to land, sea and community. We pay our respects to all Aboriginal and Torres Strait Islander Peoples, and to Elders past and present.</div>
+    </footer>
+  </div>
+
+  <!-- ===== DETAIL OVERLAY ===== -->
+  <div class="detail-overlay" id="detailOverlay">
+    <div class="detail-panel">
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- ===== DEMO PAGE (for iframe embeds when hosted) ===== -->
+  <div class="demo-page" id="demoPage">
+    <div class="demo-nav">
+      <button class="demo-back" onclick="closeDemoPage()">← Back</button>
+      <div class="demo-breadcrumb">Digital Innovation › <span id="demoBreadcrumb">Example</span></div>
+    </div>
+    <iframe class="demo-iframe" id="demoIframe" sandbox="allow-scripts allow-same-origin"></iframe>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
