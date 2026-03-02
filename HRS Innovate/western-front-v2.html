@@ -92,7 +92,7 @@ body:active{cursor:grabbing;}canvas{display:block;}
 <button class="eb" id="enterBtn">Enter the Trench</button>
 </div>
 <div class="hud-top" id="hudTop" style="opacity:0;transition:opacity 1s;">
-<div class="hud-title"><h1>The Western Front — Stand-To-Arms</h1><div class="sub">AC v9 · Year 8–9 History </div></div>
+<div class="hud-title"><h1>The Western Front — Stand-To-Arms</h1><div class="sub">AC v9 · Year 8–9 History / Health / Science / Maths</div></div>
 <div class="hs"><div class="sp">History</div><div class="sp">Health</div><div class="sp">Science</div><div class="sp">Maths</div><button class="sb-btn" id="sidebarBtn">📋 Daily Routine</button></div>
 </div>
 <div class="ch" id="hint" style="opacity:0;transition:opacity 1s;">Drag to rotate · Scroll to zoom · Click markers or tabs to learn</div>
@@ -115,432 +115,931 @@ body:active{cursor:grabbing;}canvas{display:block;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // Content sourced exclusively from PPT_Life_in_the_Trenches.pptx and PPT_-_Trench_Design.pptx
-
 const INFO_POINTS = [
-  {
-    id: 1,
-    title: "Stand-To-Arms",
-    subtitle: "The Daily Dawn Routine",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history"],
-    pos: { x: -2, y: 4.5, z: -1 },
-    paragraphs: [
-      "Every morning at 5:00 AM, soldiers carried out 'Stand-to' — short for 'Stand-to-Arms' — meaning to be on high alert for enemy attack. This took place half an hour before daylight, as dawn was the most likely time for an enemy assault. Every soldier climbed onto the Fire Step with weapons ready and peered toward the enemy lines.",
-      "At 5:30 AM, the Rum Ration was issued, followed by Stand-down half an hour after daylight at 6:00 AM. The same routine repeated at dusk — Stand-to at 5:00 PM, half an hour before dark, then Stand-down at 6:30 PM. There was a fear of attack by charging men, artillery fire and gas attack. However, attacks were not every day. Often times, very little happened."
-    ],
-    thinkAbout: "Using the daily routine schedule, write a short letter home to your family about your experiences from yesterday. Use what you have learned to be creative — describe what you see, hear, feel and smell at Stand-to.",
-    stats: { "Stand-to (dawn)": "5:00 AM", "Rum ration": "5:30 AM", "Stand-down": "6:00 AM", "Evening Stand-to": "5:00 PM" },
-    vocabulary: [
-      { word: "Stand-to-Arms", def: "To be on high alert for enemy attack — carried out daily at dawn and dusk" },
-      { word: "Fire Step", def: "A raised ledge cut into the front wall of the trench, allowing soldiers to see and fire over the parapet" },
-      { word: "Rum Ration", def: "A small daily issue of rum distributed after Stand-to, intended to steady nerves and ward off cold" }
-    ]
-  },
-  {
-    id: 2,
-    title: "The Dug Out",
-    subtitle: "Shelter Carved into the Earth",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history"],
-    pos: { x: 6, y: 2.5, z: 2 },
-    paragraphs: [
-      "The Dug Out was a sheltered area carved into the side of the trench wall, providing soldiers with basic protection from enemy fire and the elements. It was one of the key features labelled in the British Army trench diagram, alongside the fire step, parapet, parados, and duckboards.",
-      "Conditions inside were awful and inhumane. Life in the trenches was rated by soldiers across categories including trench conditions, fears, food, duties, and rats — and conditions consistently ranked among the worst aspects. Soldiers slept in shifts when they could, but rest was difficult amid the constant threat of shelling and the cramped, infested environment."
-    ],
-    thinkAbout: "Looking at the trench cross-section, what advantages or disadvantages are there to this system of trenches? Think about the Dug Out specifically — how does its position in the trench wall help protect soldiers? What are its limitations?",
-    stats: { "Location": "Carved into trench wall", "Purpose": "Shelter from fire & weather", "Conditions": "Awful and inhumane" },
-    vocabulary: [
-      { word: "Dug Out", def: "A roofed shelter dug into the wall of a trench, providing basic protection from shells and weather" },
-      { word: "Inhumane", def: "Without compassion for misery or suffering; extremely cruel or harsh conditions" },
-      { word: "Attrition", def: "Where both sides seek to gradually wear down the other by a series of small-scale actions" }
-    ]
-  },
-  {
-    id: 3,
-    title: "Duck Boards",
-    subtitle: "Walking Above the Mud",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history", "health"],
-    pos: { x: 0, y: 1, z: 3 },
-    paragraphs: [
-      "Duck Boards were wooden plank walkways laid along the bottom of the trench to keep soldiers out of the mud and standing water. They were one of the key components identified in the British Army trench diagram, and maintaining them was part of the daily routine — after 8:00 AM, soldiers would clean themselves and weapons, and tidy the trench.",
-      "When duckboards broke or were blasted apart, soldiers' feet would be submerged in thick mud and water for hours. Trench conditions and the state of soldiers' feet were among the areas rated as most difficult by soldiers. The constant wet, cold conditions made foot care a daily battle and trench maintenance an endless task."
-    ],
-    thinkAbout: "A duckboard is defined as a wooden plank walkway laid on the trench floor. Why was this such an important piece of equipment? Think about what would happen to soldiers without them, and why trench maintenance (scheduled after 8:00 AM daily) was so important.",
-    stats: { "Material": "Wooden planks", "Location": "Trench floor", "Maintenance": "Daily after 8:00 AM", "Purpose": "Keep soldiers above mud/water" },
-    vocabulary: [
-      { word: "Duck Board", def: "Wooden plank walkways laid on the trench floor to keep soldiers above the mud and standing water" },
-      { word: "Trench Maintenance", def: "Daily repair work including fixing walls, draining water, and replacing damaged duckboards" },
-      { word: "Stalemate", def: "A situation when neither army is able to progress forward" }
-    ]
-  },
-  {
-    id: 4,
-    title: "No Man's Land & Barbed Wire",
-    subtitle: "The Killing Ground Between the Lines",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history"],
-    pos: { x: -6, y: 3.5, z: -8 },
-    paragraphs: [
-      "Beyond the Parapet and the tangled Barbed Wire lay No Man's Land — the desolate ground between opposing trenches. Barbed wire was strung in dense belts in front of the trench as a key defensive feature, identified in the British Army trench diagram alongside the parapet, sandbags, and fire step.",
-      "The failure of the German Schlieffen Plan in 1914 ended the war of movement and led to a stalemate — a situation when neither army is able to progress forward. Both sides dug a series of trenches opposite each other, and this was how the rest of the war was fought. This led to a war of attrition — where both sides seek to gradually wear down the other by a series of small-scale actions. The trenches stretched from the coast at Belgium in the north to the Swiss border, 700 km south-east. This area became known as the Western Front."
-    ],
-    thinkAbout: "What adjectives would you use to describe No Man's Land? Think about why attacking across this ground was so difficult. Can you identify at least 2 reasons why attacking trenches was difficult, based on what you can see in the model?",
-    stats: { "Western Front": "~700 km long", "From": "Belgian coast", "To": "Swiss border", "Cause": "Failure of Schlieffen Plan" },
-    vocabulary: [
-      { word: "No Man's Land", def: "The dangerous ground between opposing front-line trenches" },
-      { word: "Barbed Wire", def: "Wire with sharp points strung in front of trenches to slow enemy attacks" },
-      { word: "Western Front", def: "The area of major fighting in Western Europe which moved only a little during four years of war" }
-    ]
-  },
-  {
-    id: 5,
-    title: "The Periscope",
-    subtitle: "Seeing Without Being Seen",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history", "science"],
-    pos: { x: -5, y: 5.5, z: -3 },
-    paragraphs: [
-      "The Periscope was a key piece of trench equipment identified in the British Army trench diagram. It allowed soldiers to observe No Man's Land and enemy positions without exposing their head above the parapet — where they would be vulnerable to enemy fire.",
-      "There was a constant fear of attack by charging men, artillery fire and gas attack. The periscope helped soldiers carry out their observation duties during Stand-to and throughout the day while staying safely below the sandbag line. It used two angled mirrors to reflect the view from above the parapet down to the soldier's eye level."
-    ],
-    thinkAbout: "The periscope uses two mirrors angled at 45° to redirect light. Why was this piece of equipment so important given what you know about the threats soldiers faced? Draw a diagram showing how it works and explain why soldiers couldn't simply look over the top.",
-    stats: { "Type": "Mirror-based optical device", "Position": "Mounted above parapet", "Purpose": "Safe observation", "Threats": "Snipers, artillery, gas" },
-    vocabulary: [
-      { word: "Periscope", def: "An optical instrument using angled mirrors to allow observation from a concealed position below the parapet" },
-      { word: "Parapet", def: "The front wall of the trench, built from sandbags, providing cover from enemy fire" },
-      { word: "Artillery", def: "Large-calibre guns used to fire shells over long distances — a constant threat in the trenches" }
-    ]
-  },
-  {
-    id: 6,
-    title: "Rations & Daily Life",
-    subtitle: "Food, Rats & the Daily Routine",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history"],
-    pos: { x: 3, y: 2, z: 4 },
-    paragraphs: [
-      "Breakfast at 7:00 AM was usually bacon and tea. Dinner was served at noon, and tea at 5:00 PM. After dinner, soldiers had some time for sleep and downtime, though rest was constantly disrupted. From 6:30 PM onwards, soldiers would work all night with some time for rest — being on patrol, digging trenches, and getting stores and supplies.",
-      "Rats were a constant plague in the trenches, rated alongside trench conditions, food, fears, shell shock, and duties as among the worst aspects of trench life. When asked to rate how difficult life was out of 5 — from 'Not Too Bad' to 'Awful and Inhumane' — soldiers consistently rated rats and trench conditions at the worst end of the scale."
-    ],
-    thinkAbout: "You have been given some free time at the Front Line. Write a short letter to your family about your experiences from yesterday. Use the daily routine schedule and what you have learned to be creative.",
-    stats: { "Breakfast": "7:00 AM (bacon & tea)", "Dinner": "12:00 PM", "Tea": "5:00 PM", "Night work": "6:30 PM onwards" },
-    vocabulary: [
-      { word: "Rations", def: "The food and drink supplied to soldiers — typically basic and monotonous at the front line" },
-      { word: "Shell Shock", def: "A condition caused by prolonged exposure to bombardment and the stresses of trench warfare" },
-      { word: "Duties", def: "The daily tasks soldiers were required to perform including patrols, digging, and maintenance" }
-    ]
-  },
-  {
-    id: 7,
-    title: "Sandbags & Trench Design",
-    subtitle: "Built to the British Army Manual",
-    ac: "AC9HS8K07",
-    acd: "Explain the significance of events and developments from a range of perspectives",
-    subj: ["history", "math"],
-    pos: { x: -3, y: 4, z: -5 },
-    paragraphs: [
-      "Trenches were constructed according to the British Army Manual. A trench is an area dug into the ground which is deeper than it is wide, used by soldiers for protection against the enemy in the field. The key defensive features were the Parapet (front wall) reinforced with Sandbags, and the Parados (rear wall). The Ammunition Shelf stored weapons and supplies within reach.",
-      "However, in reality, a trench would look very different from the neat diagrams. The trenches stretched 700 km from Belgium to Switzerland, and maintaining them was an enormous task. After 8:00 AM each day, soldiers would clean themselves and weapons, and tidy the trench. Despite this constant maintenance, conditions remained extremely difficult throughout the war."
-    ],
-    thinkAbout: "Compare the British Army Manual diagram of a trench to what a real trench looked like. What adjectives would you use to describe the difference? What advantages or disadvantages are there to this system of trenches?",
-    stats: { "Design": "British Army Manual", "Front wall": "Parapet with sandbags", "Rear wall": "Parados", "Length": "700 km (Western Front)" },
-    vocabulary: [
-      { word: "Parapet", def: "The front wall of a trench, built from sandbags and earth, providing cover from enemy fire" },
-      { word: "Parados", def: "The rear wall of a trench, protecting soldiers from behind" },
-      { word: "Ammunition Shelf", def: "A shelf built into the trench wall for storing weapons, ammunition and supplies within reach" }
-    ]
-  }
+  {id:1,title:"Stand-To-Arms",subtitle:"The Daily Dawn Routine",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history"],pos:{x:-2,y:4.5,z:-1},paragraphs:["Every morning at 5:00 AM, soldiers carried out 'Stand-to' — short for 'Stand-to-Arms' — meaning to be on high alert for enemy attack. This took place half an hour before daylight, as dawn was the most likely time for an enemy assault. Every soldier climbed onto the Fire Step with weapons ready and peered toward the enemy lines.","At 5:30 AM, the Rum Ration was issued, followed by Stand-down half an hour after daylight at 6:00 AM. The same routine repeated at dusk — Stand-to at 5:00 PM, half an hour before dark, then Stand-down at 6:30 PM. There was a fear of attack by charging men, artillery fire and gas attack. However, attacks were not every day. Often times, very little happened."],thinkAbout:"Using the daily routine schedule, write a short letter home to your family about your experiences from yesterday. Use what you have learned to be creative — describe what you see, hear, feel and smell at Stand-to.",stats:{"Stand-to (dawn)":"5:00 AM","Rum ration":"5:30 AM","Stand-down":"6:00 AM","Evening Stand-to":"5:00 PM"},vocabulary:[{word:"Stand-to-Arms",def:"To be on high alert for enemy attack — carried out daily at dawn and dusk"},{word:"Fire Step",def:"A raised ledge cut into the front wall of the trench, allowing soldiers to see and fire over the parapet"},{word:"Rum Ration",def:"A small daily issue of rum distributed after Stand-to, intended to steady nerves and ward off cold"}]},
+  {id:2,title:"The Dug Out",subtitle:"Shelter Carved into the Earth",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history"],pos:{x:6,y:2.5,z:2},paragraphs:["The Dug Out was a sheltered area carved into the side of the trench wall, providing soldiers with basic protection from enemy fire and the elements. It was one of the key features labelled in the British Army trench diagram, alongside the fire step, parapet, parados, and duckboards.","Conditions inside were awful and inhumane. Life in the trenches was rated by soldiers across categories including trench conditions, fears, food, duties, and rats — and conditions consistently ranked among the worst aspects. Soldiers slept in shifts when they could, but rest was difficult amid the constant threat of shelling and the cramped, infested environment."],thinkAbout:"Looking at the trench cross-section, what advantages or disadvantages are there to this system of trenches? Think about the Dug Out specifically — how does its position in the trench wall help protect soldiers? What are its limitations?",stats:{"Location":"Carved into trench wall","Purpose":"Shelter from fire & weather","Conditions":"Awful and inhumane"},vocabulary:[{word:"Dug Out",def:"A roofed shelter dug into the wall of a trench, providing basic protection from shells and weather"},{word:"Inhumane",def:"Without compassion for misery or suffering; extremely cruel or harsh conditions"},{word:"Attrition",def:"Where both sides seek to gradually wear down the other by a series of small-scale actions"}]},
+  {id:3,title:"Duck Boards",subtitle:"Walking Above the Mud",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history","health"],pos:{x:0,y:1,z:3},paragraphs:["Duck Boards were wooden plank walkways laid along the bottom of the trench to keep soldiers out of the mud and standing water. They were one of the key components identified in the British Army trench diagram, and maintaining them was part of the daily routine — after 8:00 AM, soldiers would clean themselves and weapons, and tidy the trench.","When duckboards broke or were blasted apart, soldiers' feet would be submerged in thick mud and water for hours. Trench conditions and the state of soldiers' feet were among the areas rated as most difficult by soldiers. The constant wet, cold conditions made foot care a daily battle and trench maintenance an endless task."],thinkAbout:"A duckboard is defined as a wooden plank walkway laid on the trench floor. Why was this such an important piece of equipment? Think about what would happen to soldiers without them, and why trench maintenance (scheduled after 8:00 AM daily) was so important.",stats:{"Material":"Wooden planks","Location":"Trench floor","Maintenance":"Daily after 8:00 AM","Purpose":"Keep soldiers above mud/water"},vocabulary:[{word:"Duck Board",def:"Wooden plank walkways laid on the trench floor to keep soldiers above the mud and standing water"},{word:"Trench Maintenance",def:"Daily repair work including fixing walls, draining water, and replacing damaged duckboards"},{word:"Stalemate",def:"A situation when neither army is able to progress forward"}]},
+  {id:4,title:"No Man's Land & Barbed Wire",subtitle:"The Killing Ground Between the Lines",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history"],pos:{x:-6,y:3.5,z:-8},paragraphs:["Beyond the Parapet and the tangled Barbed Wire lay No Man's Land — the desolate ground between opposing trenches. Barbed wire was strung in dense belts in front of the trench as a key defensive feature, identified in the British Army trench diagram alongside the parapet, sandbags, and fire step.","The failure of the German Schlieffen Plan in 1914 ended the war of movement and led to a stalemate — a situation when neither army is able to progress forward. Both sides dug a series of trenches opposite each other, and this was how the rest of the war was fought. This led to a war of attrition — where both sides seek to gradually wear down the other by a series of small-scale actions. The trenches stretched from the coast at Belgium in the north to the Swiss border, 700 km south-east. This area became known as the Western Front."],thinkAbout:"What adjectives would you use to describe No Man's Land? Think about why attacking across this ground was so difficult. Can you identify at least 2 reasons why attacking trenches was difficult, based on what you can see in the model?",stats:{"Western Front":"~700 km long","From":"Belgian coast","To":"Swiss border","Cause":"Failure of Schlieffen Plan"},vocabulary:[{word:"No Man's Land",def:"The dangerous ground between opposing front-line trenches"},{word:"Barbed Wire",def:"Wire with sharp points strung in front of trenches to slow enemy attacks"},{word:"Western Front",def:"The area of major fighting in Western Europe which moved only a little during four years of war"}]},
+  {id:5,title:"The Periscope",subtitle:"Seeing Without Being Seen",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history","science"],pos:{x:-5,y:5.5,z:-3},paragraphs:["The Periscope was a key piece of trench equipment identified in the British Army trench diagram. It allowed soldiers to observe No Man's Land and enemy positions without exposing their head above the parapet — where they would be vulnerable to enemy fire.","There was a constant fear of attack by charging men, artillery fire and gas attack. The periscope helped soldiers carry out their observation duties during Stand-to and throughout the day while staying safely below the sandbag line. It used two angled mirrors to reflect the view from above the parapet down to the soldier's eye level."],thinkAbout:"The periscope uses two mirrors angled at 45° to redirect light. Why was this piece of equipment so important given what you know about the threats soldiers faced? Draw a diagram showing how it works and explain why soldiers couldn't simply look over the top.",stats:{"Type":"Mirror-based optical device","Position":"Mounted above parapet","Purpose":"Safe observation","Threats":"Snipers, artillery, gas"},vocabulary:[{word:"Periscope",def:"An optical instrument using angled mirrors to allow observation from a concealed position below the parapet"},{word:"Parapet",def:"The front wall of the trench, built from sandbags, providing cover from enemy fire"},{word:"Artillery",def:"Large-calibre guns used to fire shells over long distances — a constant threat in the trenches"}]},
+  {id:6,title:"Rations & Daily Life",subtitle:"Food, Rats & the Daily Routine",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history"],pos:{x:3,y:2,z:4},paragraphs:["Breakfast at 7:00 AM was usually bacon and tea. Dinner was served at noon, and tea at 5:00 PM. After dinner, soldiers had some time for sleep and downtime, though rest was constantly disrupted. From 6:30 PM onwards, soldiers would work all night with some time for rest — being on patrol, digging trenches, and getting stores and supplies.","Rats were a constant plague in the trenches, rated alongside trench conditions, food, fears, shell shock, and duties as among the worst aspects of trench life. When asked to rate how difficult life was out of 5 — from 'Not Too Bad' to 'Awful and Inhumane' — soldiers consistently rated rats and trench conditions at the worst end of the scale."],thinkAbout:"You have been given some free time at the Front Line. Write a short letter to your family about your experiences from yesterday. Use the daily routine schedule and what you have learned to be creative.",stats:{"Breakfast":"7:00 AM (bacon & tea)","Dinner":"12:00 PM","Tea":"5:00 PM","Night work":"6:30 PM onwards"},vocabulary:[{word:"Rations",def:"The food and drink supplied to soldiers — typically basic and monotonous at the front line"},{word:"Shell Shock",def:"A condition caused by prolonged exposure to bombardment and the stresses of trench warfare"},{word:"Duties",def:"The daily tasks soldiers were required to perform including patrols, digging, and maintenance"}]},
+  {id:7,title:"Sandbags & Trench Design",subtitle:"Built to the British Army Manual",ac:"AC9HS8K07",acd:"Explain the significance of events and developments from a range of perspectives",subj:["history","math"],pos:{x:-3,y:4,z:-5},paragraphs:["Trenches were constructed according to the British Army Manual. A trench is an area dug into the ground which is deeper than it is wide, used by soldiers for protection against the enemy in the field. The key defensive features were the Parapet (front wall) reinforced with Sandbags, and the Parados (rear wall). The Ammunition Shelf stored weapons and supplies within reach.","However, in reality, a trench would look very different from the neat diagrams. The trenches stretched 700 km from Belgium to Switzerland, and maintaining them was an enormous task. After 8:00 AM each day, soldiers would clean themselves and weapons, and tidy the trench. Despite this constant maintenance, conditions remained extremely difficult throughout the war."],thinkAbout:"Compare the British Army Manual diagram of a trench to what a real trench looked like. What adjectives would you use to describe the difference? What advantages or disadvantages are there to this system of trenches?",stats:{"Design":"British Army Manual","Front wall":"Parapet with sandbags","Rear wall":"Parados","Length":"700 km (Western Front)"},vocabulary:[{word:"Parapet",def:"The front wall of a trench, built from sandbags and earth, providing cover from enemy fire"},{word:"Parados",def:"The rear wall of a trench, protecting soldiers from behind"},{word:"Ammunition Shelf",def:"A shelf built into the trench wall for storing weapons, ammunition and supplies within reach"}]}
 ];
-
 const DAILY_ROUTINE = [
-  { time: "5:00 AM", event: "Stand-to", desc: "'Stand-to-Arms' — on high alert for enemy attack, half an hour before daylight" },
-  { time: "5:30 AM", event: "Rum Ration", desc: "Rum ration issued to soldiers after Stand-to" },
-  { time: "6:00 AM", event: "Stand-down", desc: "Stand-down half an hour after daylight" },
-  { time: "7:00 AM", event: "Breakfast", desc: "Usually bacon and tea" },
-  { time: "After 8:00 AM", event: "Maintenance & Cleaning", desc: "Clean themselves and weapons, tidy trench" },
-  { time: "12:00 PM", event: "Dinner", desc: "Midday meal served" },
-  { time: "After Dinner", event: "Sleep & Downtime", desc: "Rest period — though constantly disrupted" },
-  { time: "5:00 PM", event: "Tea", desc: "Afternoon meal" },
-  { time: "5:00 PM", event: "Evening Stand-to", desc: "Stand-to half an hour before dusk" },
-  { time: "6:30 PM", event: "Stand-down", desc: "Stand-down half an hour after dusk" },
-  { time: "6:30 PM+", event: "Night Duties", desc: "Work all night — on patrol, digging trenches, getting stores/supplies, with some time for rest" }
+  {time:"5:00 AM",event:"Stand-to",desc:"'Stand-to-Arms' — on high alert for enemy attack, half an hour before daylight"},
+  {time:"5:30 AM",event:"Rum Ration",desc:"Rum ration issued to soldiers after Stand-to"},
+  {time:"6:00 AM",event:"Stand-down",desc:"Stand-down half an hour after daylight"},
+  {time:"7:00 AM",event:"Breakfast",desc:"Usually bacon and tea"},
+  {time:"After 8:00 AM",event:"Maintenance & Cleaning",desc:"Clean themselves and weapons, tidy trench"},
+  {time:"12:00 PM",event:"Dinner",desc:"Midday meal served"},
+  {time:"After Dinner",event:"Sleep & Downtime",desc:"Rest period — though constantly disrupted"},
+  {time:"5:00 PM",event:"Tea",desc:"Afternoon meal"},
+  {time:"5:00 PM",event:"Evening Stand-to",desc:"Stand-to half an hour before dusk"},
+  {time:"6:30 PM",event:"Stand-down",desc:"Stand-down half an hour after dusk"},
+  {time:"6:30 PM+",event:"Night Duties",desc:"Work all night — on patrol, digging trenches, getting stores/supplies, with some time for rest"}
 ];
+// ============================================
+// WESTERN FRONT V5 — IMMERSIVE REBUILD
+// Custom shaders, detailed geometry, atmosphere
+// ============================================
 
-// === THREE.JS SCENE — BRIGHTENED ===
-const CC=document.getElementById('cc'),S=new THREE.Scene();
-// Overcast dawn sky — lighter, more visible
-const skyG=new THREE.SphereGeometry(200,32,16);
+const CC=document.getElementById('cc');
+const S=new THREE.Scene();
+
+// === CUSTOM SHADER MATERIALS ===
+// Procedural mud shader — noise-based surface detail
+const mudVertShader=`
+varying vec2 vUv;varying vec3 vPos;varying vec3 vNorm;varying vec3 vWorldPos;
+void main(){
+  vUv=uv;vPos=position;vNorm=normalize(normalMatrix*normal);
+  vWorldPos=(modelMatrix*vec4(position,1.0)).xyz;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+}`;
+const mudFragShader=`
+uniform float uTime;
+varying vec2 vUv;varying vec3 vPos;varying vec3 vNorm;varying vec3 vWorldPos;
+// Simplex-style noise
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 perm(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+float noise(vec3 p){
+  vec3 a=floor(p);vec3 d=p-a;d=d*d*(3.0-2.0*d);
+  vec4 b=a.xxyy+vec4(0,1,0,1);
+  vec4 k1=perm(b.xyxy);vec4 k2=perm(k1.xyxy+b.zzww);
+  vec4 c=k2+a.zzzz;vec4 k3=perm(c);vec4 k4=perm(c+1.0);
+  vec4 o1=fract(k3*(1.0/41.0));vec4 o2=fract(k4*(1.0/41.0));
+  vec4 o3=o2*d.z+o1*(1.0-d.z);
+  vec2 o4=o3.yw*d.x+o3.xz*(1.0-d.x);
+  return o4.y*d.y+o4.x*(1.0-d.y);
+}
+float fbm(vec3 p){
+  float v=0.0;float a=0.5;
+  for(int i=0;i<5;i++){v+=a*noise(p);p*=2.1;a*=0.5;}
+  return v;
+}
+void main(){
+  vec3 p=vWorldPos*0.8;
+  float n=fbm(p);
+  float n2=fbm(p*3.0+vec3(5.2,1.3,2.8));
+  float n3=noise(p*12.0);
+  // Mud base colours — dark brown with variation
+  vec3 mudDark=vec3(0.18,0.12,0.06);
+  vec3 mudMid=vec3(0.28,0.2,0.1);
+  vec3 mudLight=vec3(0.38,0.28,0.14);
+  vec3 mudWet=vec3(0.12,0.08,0.04);
+  vec3 col=mix(mudDark,mudMid,n);
+  col=mix(col,mudLight,n2*0.5);
+  // Wet patches (lower areas)
+  float wetness=smoothstep(0.3,0.0,vWorldPos.y)*0.7;
+  col=mix(col,mudWet,wetness);
+  // Pebble/stone detail
+  float stones=smoothstep(0.58,0.62,n3)*0.15;
+  col+=vec3(stones*0.6,stones*0.5,stones*0.3);
+  // Root/fiber streaks
+  float roots=smoothstep(0.6,0.65,noise(vWorldPos*vec3(2.0,8.0,2.0)))*0.08;
+  col-=vec3(roots);
+  // Basic lighting
+  vec3 lightDir=normalize(vec3(-0.5,1.0,-0.3));
+  float diff=max(dot(vNorm,lightDir),0.0)*0.6+0.4;
+  // Fake ambient occlusion based on position depth
+  float ao=smoothstep(-2.0,2.0,vWorldPos.y)*0.3+0.7;
+  col*=diff*ao;
+  // Slight specular for wet areas
+  vec3 viewDir=normalize(cameraPosition-vWorldPos);
+  vec3 halfDir=normalize(lightDir+viewDir);
+  float spec=pow(max(dot(vNorm,halfDir),0.0),32.0)*wetness*0.3;
+  col+=vec3(spec);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+// Procedural wood shader
+const woodFragShader=`
+uniform float uTime;
+varying vec2 vUv;varying vec3 vPos;varying vec3 vNorm;varying vec3 vWorldPos;
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 perm(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+float noise(vec3 p){
+  vec3 a=floor(p);vec3 d=p-a;d=d*d*(3.0-2.0*d);
+  vec4 b=a.xxyy+vec4(0,1,0,1);vec4 k1=perm(b.xyxy);vec4 k2=perm(k1.xyxy+b.zzww);
+  vec4 c=k2+a.zzzz;vec4 k3=perm(c);vec4 k4=perm(c+1.0);
+  vec4 o1=fract(k3*(1.0/41.0));vec4 o2=fract(k4*(1.0/41.0));
+  vec4 o3=o2*d.z+o1*(1.0-d.z);vec2 o4=o3.yw*d.x+o3.xz*(1.0-d.x);
+  return o4.y*d.y+o4.x*(1.0-d.y);
+}
+void main(){
+  vec3 p=vWorldPos;
+  // Wood grain — use Y-axis stretch for plank direction
+  float grain=noise(vec3(p.x*2.0,p.y*0.3,p.z*2.0))*0.5+
+              noise(vec3(p.x*8.0,p.y*1.0,p.z*8.0))*0.25+
+              noise(vec3(p.x*20.0,p.y*3.0,p.z*20.0))*0.12;
+  // Ring pattern
+  float rings=sin((p.x*4.0+grain*3.0)*6.28)*0.5+0.5;
+  rings=smoothstep(0.3,0.7,rings);
+  vec3 woodDark=vec3(0.25,0.15,0.06);
+  vec3 woodLight=vec3(0.42,0.28,0.12);
+  vec3 woodWet=vec3(0.18,0.1,0.04);
+  vec3 col=mix(woodDark,woodLight,rings*0.6+grain*0.4);
+  // Weathering — darker at edges/bottom
+  float weather=noise(p*5.0)*0.2;
+  col=mix(col,woodWet,weather+smoothstep(1.0,-1.0,p.y)*0.2);
+  // Knots
+  float knot=1.0-smoothstep(0.0,0.15,length(fract(p.xz*0.7)-0.5));
+  col=mix(col,woodDark*0.5,knot*0.4);
+  vec3 lightDir=normalize(vec3(-0.5,1.0,-0.3));
+  float diff=max(dot(vNorm,lightDir),0.0)*0.5+0.5;
+  col*=diff;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+// Sandbag shader — woven hessian texture
+const sandFragShader=`
+uniform float uTime;uniform float uVariant;
+varying vec2 vUv;varying vec3 vPos;varying vec3 vNorm;varying vec3 vWorldPos;
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 perm(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+float noise(vec3 p){
+  vec3 a=floor(p);vec3 d=p-a;d=d*d*(3.0-2.0*d);
+  vec4 b=a.xxyy+vec4(0,1,0,1);vec4 k1=perm(b.xyxy);vec4 k2=perm(k1.xyxy+b.zzww);
+  vec4 c=k2+a.zzzz;vec4 k3=perm(c);vec4 k4=perm(c+1.0);
+  vec4 o1=fract(k3*(1.0/41.0));vec4 o2=fract(k4*(1.0/41.0));
+  vec4 o3=o2*d.z+o1*(1.0-d.z);vec2 o4=o3.yw*d.x+o3.xz*(1.0-d.x);
+  return o4.y*d.y+o4.x*(1.0-d.y);
+}
+void main(){
+  vec3 p=vWorldPos*4.0+uVariant*10.0;
+  // Weave pattern
+  float weaveX=sin(p.x*30.0)*0.5+0.5;
+  float weaveZ=sin(p.z*30.0)*0.5+0.5;
+  float weave=weaveX*weaveZ*0.15;
+  float n=noise(p*2.0);
+  vec3 sandBase=vec3(0.52,0.44,0.3);
+  vec3 sandDark=vec3(0.35,0.28,0.18);
+  vec3 col=mix(sandBase,sandDark,n*0.5+uVariant*0.15);
+  col+=vec3(weave*0.8,weave*0.7,weave*0.4);
+  // Dirt staining at bottom
+  float dirt=smoothstep(0.3,-0.3,vPos.y)*0.3;
+  col=mix(col,vec3(0.2,0.14,0.07),dirt);
+  vec3 lightDir=normalize(vec3(-0.5,1.0,-0.3));
+  float diff=max(dot(vNorm,lightDir),0.0)*0.5+0.5;
+  col*=diff;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+function makeMudMat(){return new THREE.ShaderMaterial({uniforms:{uTime:{value:0}},vertexShader:mudVertShader,fragmentShader:mudFragShader});}
+function makeWoodMat(){return new THREE.ShaderMaterial({uniforms:{uTime:{value:0}},vertexShader:mudVertShader,fragmentShader:woodFragShader});}
+function makeSandMat(v){return new THREE.ShaderMaterial({uniforms:{uTime:{value:0},uVariant:{value:v||0}},vertexShader:mudVertShader,fragmentShader:sandFragShader});}
+
+// Standard materials for small objects
+const metalM=new THREE.MeshStandardMaterial({color:0x505058,roughness:0.4,metalness:0.5});
+const waterM=new THREE.MeshPhysicalMaterial({color:0x1a1a12,roughness:0.05,metalness:0.1,transparent:true,opacity:0.55,clearcoat:0.8});
+const wireM=new THREE.MeshStandardMaterial({color:0x404048,roughness:0.5,metalness:0.6});
+const clothK=new THREE.MeshStandardMaterial({color:0x5a5838,roughness:0.85});
+const skinM=new THREE.MeshStandardMaterial({color:0xa07858,roughness:0.7});
+const bootM=new THREE.MeshStandardMaterial({color:0x2a1808,roughness:0.85});
+const leatherM=new THREE.MeshStandardMaterial({color:0x3a2a15,roughness:0.7});
+
+// === RENDERER ===
+const cam=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,500);
+const R=new THREE.WebGLRenderer({antialias:true,alpha:false});
+R.setSize(innerWidth,innerHeight);
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+R.shadowMap.enabled=true;
+R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.toneMapping=THREE.ACESFilmicToneMapping;
+R.toneMappingExposure=1.3;
+R.outputEncoding=THREE.sRGBEncoding;
+CC.appendChild(R.domElement);
+
+// === SKY — dramatic pre-dawn with cloud layers ===
+const skyG=new THREE.SphereGeometry(180,64,32);
 const skyC=new Float32Array(skyG.attributes.position.count*3);
 for(let i=0;i<skyG.attributes.position.count;i++){
-  const y=skyG.attributes.position.getY(i)/200;
+  const y=skyG.attributes.position.getY(i)/180;
   const t=Math.max(0,y);
-  // Brighter overcast dawn: grey-blue with warm horizon
-  skyC[i*3]=.32+t*.15+(1-t)*.18;
-  skyC[i*3+1]=.32+t*.18+(1-t)*.14;
-  skyC[i*3+2]=.38+t*.22+(1-t)*.1;
+  const hz=1.0-t; // horizon factor
+  // Deep dark blue at zenith, warm amber glow at horizon
+  skyC[i*3]=0.06+t*0.04+hz*hz*0.2;
+  skyC[i*3+1]=0.06+t*0.06+hz*hz*0.1;
+  skyC[i*3+2]=0.1+t*0.12+hz*hz*0.04;
 }
 skyG.setAttribute('color',new THREE.BufferAttribute(skyC,3));
 S.add(new THREE.Mesh(skyG,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));
-S.fog=new THREE.FogExp2(0x404848,.008);
-const cam=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,500);
-const R=new THREE.WebGLRenderer({antialias:true});
-R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));
-R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
-R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.4;
-CC.appendChild(R.domElement);
 
-// BRIGHTER LIGHTING
-S.add(new THREE.AmbientLight(0x808898,.7));
-// Overcast sky light
-const skyLight=new THREE.DirectionalLight(0x8898b0,.6);skyLight.position.set(0,30,0);S.add(skyLight);
-// Dawn directional
-const dawn=new THREE.DirectionalLight(0xffc880,.5);dawn.position.set(-15,12,-20);dawn.castShadow=true;
-dawn.shadow.mapSize.set(2048,2048);dawn.shadow.camera.left=-30;dawn.shadow.camera.right=30;dawn.shadow.camera.top=30;dawn.shadow.camera.bottom=-30;
-S.add(dawn);
-// Fill from other side
-const fill=new THREE.DirectionalLight(0x7888a0,.35);fill.position.set(15,10,10);S.add(fill);
-// Warm horizon glow
-const horizGlow=new THREE.PointLight(0xff8040,.4,60);horizGlow.position.set(0,3,-40);S.add(horizGlow);
-// Hemisphere for overall lift
-S.add(new THREE.HemisphereLight(0x8090b0,0x605840,.5));
+// Volumetric-ish fog
+S.fog=new THREE.FogExp2(0x1a1820,0.009);
 
-// Oil lamp in dugout (flickering but brighter)
-const lamp=new THREE.PointLight(0xff9040,1.0,14);lamp.position.set(6.5,2.2,2);lamp.castShadow=true;S.add(lamp);
-const lampBulb=new THREE.Mesh(new THREE.SphereGeometry(.1,6,4),new THREE.MeshBasicMaterial({color:0xffbb50}));
-lampBulb.position.copy(lamp.position);S.add(lampBulb);
-
-// Materials — brighter, more visible
-const mudM=new THREE.MeshStandardMaterial({color:0x5a4428,roughness:.95,metalness:0});
-const mudW=new THREE.MeshStandardMaterial({color:0x4a3418,roughness:.9});
-const woodM=new THREE.MeshStandardMaterial({color:0x6a4a28,roughness:.82});
-const woodLt=new THREE.MeshStandardMaterial({color:0x7a5a30,roughness:.78});
-const sandM=new THREE.MeshStandardMaterial({color:0x8a7a58,roughness:.85});
-const sandDk=new THREE.MeshStandardMaterial({color:0x7a6a48,roughness:.88});
-const metalM=new THREE.MeshStandardMaterial({color:0x606068,roughness:.45,metalness:.4});
-const waterM=new THREE.MeshPhysicalMaterial({color:0x3a3a28,roughness:.1,metalness:.1,transparent:true,opacity:.45,clearcoat:.6});
-const wireM=new THREE.MeshStandardMaterial({color:0x505058,roughness:.55,metalness:.5});
-const clothKhaki=new THREE.MeshStandardMaterial({color:0x6a6848,roughness:.82});
-const skinM=new THREE.MeshStandardMaterial({color:0xb08868,roughness:.7});
+// === LIGHTING RIG — cinematic, moody but visible ===
+// Ambient base
+S.add(new THREE.AmbientLight(0x606878,0.5));
+// Hemisphere
+S.add(new THREE.HemisphereLight(0x607090,0x3a2a18,0.45));
+// Key: dawn warm light from horizon
+const keyLight=new THREE.DirectionalLight(0xffa860,0.6);
+keyLight.position.set(-20,8,-25);keyLight.castShadow=true;
+keyLight.shadow.mapSize.set(2048,2048);
+keyLight.shadow.camera.left=-35;keyLight.shadow.camera.right=35;
+keyLight.shadow.camera.top=35;keyLight.shadow.camera.bottom=-35;
+keyLight.shadow.camera.near=0.1;keyLight.shadow.camera.far=80;
+keyLight.shadow.bias=-0.001;
+S.add(keyLight);
+// Cool fill from opposite
+const fillLight=new THREE.DirectionalLight(0x5070a0,0.3);
+fillLight.position.set(15,12,15);S.add(fillLight);
+// Overhead dim
+const topLight=new THREE.DirectionalLight(0x707888,0.25);
+topLight.position.set(0,30,0);S.add(topLight);
+// Horizon glow
+const horizGlow=new THREE.PointLight(0xff6030,0.5,80);
+horizGlow.position.set(0,1,-50);S.add(horizGlow);
+// Secondary warm bounce
+const bounceLight=new THREE.PointLight(0xffa050,0.2,25);
+bounceLight.position.set(0,0.5,2);S.add(bounceLight);
+// Oil lamp
+const lamp=new THREE.PointLight(0xff8020,1.2,16);
+lamp.position.set(6.5,1.8,7.2);lamp.castShadow=true;
+lamp.shadow.mapSize.set(512,512);S.add(lamp);
+const lampGlow=new THREE.Mesh(new THREE.SphereGeometry(0.08,6,4),new THREE.MeshBasicMaterial({color:0xffaa40}));
+lampGlow.position.copy(lamp.position);S.add(lampGlow);
 
 // === TERRAIN ===
-const tG=new THREE.PlaneGeometry(80,80,100,100);tG.rotateX(-Math.PI/2);
+const tG=new THREE.PlaneGeometry(120,120,200,200);
+tG.rotateX(-Math.PI/2);
 const tP=tG.attributes.position;
 for(let i=0;i<tP.count;i++){
   const x=tP.getX(i),z=tP.getZ(i);
   let y=0;
-  y+=Math.sin(x*.08)*.8+Math.cos(z*.06)*.6+Math.sin(x*.2+z*.15)*.25;
-  // Shell craters in No Man's Land (z<-5)
-  if(z<-5){for(let c=0;c<10;c++){const cx=-18+c*4+(c%2)*2,cz=-8-c*2.5;const d=Math.sqrt((x-cx)**2+(z-cz)**2);if(d<3)y-=Math.max(0,(3-d)*.6);}}
-  // Trench cut
-  if(x>-9&&x<9&&z>-3&&z<7){const eX=Math.min(x+9,9-x),eZ=Math.min(z+3,7-z),e=Math.min(eX,eZ);y-=3.5*Math.min(1,e*.5);}
+  // Multi-frequency undulation
+  y+=Math.sin(x*0.05)*1.2+Math.cos(z*0.04)*0.9;
+  y+=Math.sin(x*0.12+z*0.08)*0.4;
+  y+=Math.sin(x*0.3)*0.15+Math.cos(z*0.25)*0.12;
+  // Shell craters — more numerous, varied sizes
+  if(z<-4){
+    const craters=[
+      [-12,-8,3.5],[-5,-12,2.8],[3,-10,3.2],[-18,-15,2.5],[8,-14,3],
+      [-8,-18,2.2],[15,-8,2],[0,-6,2.5],[-20,-10,3],[12,-16,2.8],
+      [5,-20,3.5],[-15,-22,2],[-3,-25,3.2],[18,-12,2.5],[-10,-5,2]
+    ];
+    for(const[cx,cz,cr] of craters){
+      const d=Math.sqrt((x-cx)**2+(z-cz)**2);
+      if(d<cr)y-=Math.cos(d/cr*Math.PI*0.5)*(cr*0.5);
+    }
+    // Raised crater rims
+    for(const[cx,cz,cr] of craters){
+      const d=Math.sqrt((x-cx)**2+(z-cz)**2);
+      if(d>=cr&&d<cr+0.8)y+=(cr+0.8-d)*0.3;
+    }
+  }
+  // Trench cut — wider, more organic edges
+  if(x>-10&&x<10&&z>-3.5&&z<7.5){
+    const eX=Math.min(x+10,10-x);
+    const eZ=Math.min(z+3.5,7.5-z);
+    const e=Math.min(eX,eZ);
+    const noiseOff=Math.sin(x*0.5)*0.3+Math.sin(z*0.7)*0.2;
+    y-=3.8*Math.min(1,(e+noiseOff)*0.45);
+  }
   tP.setY(i,y);
 }
 tG.computeVertexNormals();
-const tC=new Float32Array(tP.count*3);
-for(let i=0;i<tP.count;i++){
-  const z=tP.getZ(i);let r,g,b;
-  if(z<-5){r=.28;g=.22;b=.15;} else{r=.3+Math.random()*.04;g=.24+Math.random()*.03;b=.15+Math.random()*.02;}
-  const n=.85+Math.random()*.15;tC[i*3]=r*n;tC[i*3+1]=g*n;tC[i*3+2]=b*n;
-}
-tG.setAttribute('color',new THREE.BufferAttribute(tC,3));
-const terrain=new THREE.Mesh(tG,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95}));
-terrain.receiveShadow=true;S.add(terrain);
-
-// === TRENCH WALLS ===
+const terrain=new THREE.Mesh(tG,makeMudMat());
+terrain.receiveShadow=true;
+S.add(terrain);
+// === TRENCH GROUP ===
 const TG=new THREE.Group();
-const fWall=new THREE.Mesh(new THREE.BoxGeometry(18,4.5,.8),mudW);fWall.position.set(0,.2,-2.6);fWall.castShadow=true;TG.add(fWall);
-const rWall=new THREE.Mesh(new THREE.BoxGeometry(18,4,.8),mudW);rWall.position.set(0,.2,6.6);rWall.castShadow=true;TG.add(rWall);
-for(let sx of[-9,9]){const w=new THREE.Mesh(new THREE.BoxGeometry(.8,4.5,10),mudW);w.position.set(sx,.2,2);w.castShadow=true;TG.add(w);}
+const mudMat=makeMudMat();
+const woodMat=makeWoodMat();
 
-// Timber revetment
-for(let rx=-7;rx<=7;rx+=2){
-  const fR=new THREE.Mesh(new THREE.BoxGeometry(.14,3.5,.14),woodM);fR.position.set(rx,-.2,-2.15);fR.castShadow=true;TG.add(fR);
-  const fH=new THREE.Mesh(new THREE.BoxGeometry(.12,.1,1),woodM);fH.position.set(rx,.8,-2.2);TG.add(fH);
-  const rR=new THREE.Mesh(new THREE.BoxGeometry(.14,3,.14),woodM);rR.position.set(rx,-.3,6.15);TG.add(rR);
-  // Horizontal planking on walls
-  for(let hy of[-.5,.5,1.5]){
-    const hp=new THREE.Mesh(new THREE.BoxGeometry(1.8,.12,.06),woodLt);hp.position.set(rx,hy,-2.18);TG.add(hp);
+// Helper: create irregular box with vertex displacement
+function roughBox(w,h,d,segsW,segsH,segsD,roughness){
+  const g=new THREE.BoxGeometry(w,h,d,segsW||4,segsH||4,segsD||4);
+  const p=g.attributes.position;
+  for(let i=0;i<p.count;i++){
+    p.setX(i,p.getX(i)+(Math.random()-0.5)*roughness);
+    p.setY(i,p.getY(i)+(Math.random()-0.5)*roughness);
+    p.setZ(i,p.getZ(i)+(Math.random()-0.5)*roughness);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+// Front wall — irregular earth with higher subdivision
+const fWallG=roughBox(20,5,1.2,12,8,2,0.12);
+const fWall=new THREE.Mesh(fWallG,mudMat);
+fWall.position.set(0,0.5,-2.8);fWall.castShadow=true;fWall.receiveShadow=true;TG.add(fWall);
+
+// Rear wall
+const rWallG=roughBox(20,4.5,1.2,12,8,2,0.12);
+const rWall=new THREE.Mesh(rWallG,mudMat);
+rWall.position.set(0,0.3,7);rWall.castShadow=true;rWall.receiveShadow=true;TG.add(rWall);
+
+// Side walls
+for(const sx of[-10,10]){
+  const sG=roughBox(1.2,5,11,2,8,8,0.1);
+  const sw=new THREE.Mesh(sG,mudMat);
+  sw.position.set(sx,0.5,2);sw.castShadow=true;sw.receiveShadow=true;TG.add(sw);
+}
+
+// Exposed earth layers in walls — horizontal strata lines
+const strataColors=[0x3a2810,0x4a3418,0x2e1e0c,0x453020,0x3d2a14,0x352008];
+for(let ey=-1;ey<2;ey+=0.6){
+  for(let ex=-8;ex<9;ex+=1.5+Math.random()){
+    const sc=strataColors[Math.floor(Math.random()*strataColors.length)];
+    const strata=new THREE.Mesh(
+      new THREE.BoxGeometry(1.2+Math.random()*0.8,0.04,0.06),
+      new THREE.MeshStandardMaterial({color:sc,roughness:0.95})
+    );
+    strata.position.set(ex,ey,-2.15);TG.add(strata);
+    const s2=strata.clone();s2.position.set(ex,ey-0.3,6.35);TG.add(s2);
   }
 }
-// Cross braces
-for(let rx=-6;rx<=6;rx+=3){const b=new THREE.Mesh(new THREE.BoxGeometry(.08,2.5,.08),woodM);b.position.set(rx,.5,-2.2);b.rotation.z=.3;TG.add(b);}
 
-// === FIRE STEP ===
-const fireStep=new THREE.Mesh(new THREE.BoxGeometry(14,.7,1.5),woodLt);
-fireStep.position.set(-1,.85,-1.5);fireStep.castShadow=true;fireStep.receiveShadow=true;TG.add(fireStep);
-for(let p=0;p<7;p++){
-  const pl=new THREE.Mesh(new THREE.BoxGeometry(1.8,.08,1.4),new THREE.MeshStandardMaterial({color:0x6a5030+Math.floor(Math.random()*0x0a0808),roughness:.8}));
-  pl.position.set(-5+p*1.9,.92,-1.5);TG.add(pl);
+// === TIMBER REVETMENT — detailed A-frame system ===
+for(let rx=-8;rx<=8;rx+=1.6){
+  // Vertical post — front
+  const post=new THREE.Mesh(roughBox(0.16,3.8,0.16,1,6,1,0.02),woodMat);
+  post.position.set(rx,-0.1,-2.1);post.castShadow=true;TG.add(post);
+  // Horizontal waler
+  const waler=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.14,0.8),woodMat);
+  waler.position.set(rx,0.6,-2.15);TG.add(waler);
+  // Diagonal brace
+  const brace=new THREE.Mesh(new THREE.BoxGeometry(0.08,2.2,0.08),woodMat);
+  brace.position.set(rx,0.2,-1.8);brace.rotation.z=0.35;brace.rotation.y=(Math.random()-0.5)*0.1;TG.add(brace);
+  // Horizontal planking (revetting)
+  for(let hy=-1.2;hy<1.8;hy+=0.35){
+    const plank=new THREE.Mesh(
+      new THREE.BoxGeometry(1.4+Math.random()*0.3,0.08+Math.random()*0.03,0.06),
+      woodMat
+    );
+    plank.position.set(rx,hy,-2.14);
+    plank.rotation.z=(Math.random()-0.5)*0.02;TG.add(plank);
+  }
+  // Rear wall posts (less detailed)
+  const rPost=new THREE.Mesh(new THREE.BoxGeometry(0.14,3,0.14),woodMat);
+  rPost.position.set(rx,-0.2,6.35);TG.add(rPost);
 }
 
-// === PARAPET (CylinderGeometry sandbags as specified) ===
-function sandbagRow(startX,y,z,count,rotY){
-  for(let i=0;i<count;i++){
-    const sb=new THREE.Mesh(new THREE.CylinderGeometry(.18,.2,.38,8).rotateZ(Math.PI/2),i%2===0?sandM:sandDk);
-    sb.position.set(startX+i*.42,y,z);sb.rotation.y=rotY+(Math.random()-.5)*.15;sb.rotation.x=(Math.random()-.5)*.1;sb.castShadow=true;TG.add(sb);
+// === FIRE STEP — layered planks with wear ===
+const fsBase=new THREE.Mesh(roughBox(15,0.8,1.8,10,2,4,0.04),woodMat);
+fsBase.position.set(-0.5,0.7,-1.3);fsBase.castShadow=true;fsBase.receiveShadow=true;TG.add(fsBase);
+// Individual planks on top
+for(let p=0;p<10;p++){
+  const pw=1.2+Math.random()*0.4;
+  const plank=new THREE.Mesh(
+    roughBox(pw,0.06,1.6,3,1,2,0.015),
+    woodMat
+  );
+  plank.position.set(-6.5+p*1.4+Math.random()*0.1,1.15,-1.3);
+  plank.rotation.y=(Math.random()-0.5)*0.04;
+  plank.rotation.z=(Math.random()-0.5)*0.02;
+  TG.add(plank);
+}
+
+// === PARAPET — detailed sandbags ===
+function sandbag(x,y,z,rotY,variant){
+  const g=new THREE.CylinderGeometry(0.17,0.2,0.4,12,4);
+  g.rotateZ(Math.PI/2);
+  // Deform for organic look
+  const p=g.attributes.position;
+  for(let i=0;i<p.count;i++){
+    const px=p.getX(i),py=p.getY(i),pz=p.getZ(i);
+    // Sag in middle, bulge at ends
+    const sag=Math.sin((px/0.2)*Math.PI)*0.03;
+    p.setY(i,py-sag+Math.random()*0.008);
+    p.setZ(i,pz+(Math.random()-0.5)*0.01);
+  }
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,makeSandMat(variant));
+  m.position.set(x,y,z);
+  m.rotation.y=rotY+(Math.random()-0.5)*0.2;
+  m.rotation.x=(Math.random()-0.5)*0.08;
+  m.rotation.z=(Math.random()-0.5)*0.06;
+  m.castShadow=true;m.receiveShadow=true;
+  return m;
+}
+
+// Front parapet: 4 rows, staggered
+for(let row=0;row<4;row++){
+  const off=row%2===0?0:0.21;
+  for(let i=0;i<34;i++){
+    TG.add(sandbag(-7.5+off+i*0.44,2.3+row*0.33,-2.9,0.02,Math.random()));
   }
 }
-for(let row=0;row<3;row++){sandbagRow(-7+(row%2===0?0:.21),2.5+row*.35,-2.8,32,.02);}
-// Parados
-for(let row=0;row<2;row++){sandbagRow(-7+(row%2===0?0:.21),2.2+row*.35,6.8,32,.02);}
-
-// === DUCKBOARDS (BoxGeometry as specified) ===
-for(let dx=-7;dx<=7;dx+=1.2){
-  const broken=Math.random()>.82;
-  const db=new THREE.Mesh(new THREE.BoxGeometry(1,.1,3.5),woodLt);
-  db.position.set(dx,-1.4+(broken?-.3:0)+(Math.random()-.1)*.08,2);
-  if(broken){db.rotation.z=(Math.random()-.5)*.4;db.rotation.x=(Math.random()-.5)*.2;}
-  db.castShadow=true;db.receiveShadow=true;TG.add(db);
+// Parados: 3 rows
+for(let row=0;row<3;row++){
+  const off=row%2===0?0:0.21;
+  for(let i=0;i<34;i++){
+    TG.add(sandbag(-7.5+off+i*0.44,2.0+row*0.33,7.1,0.02,Math.random()));
+  }
 }
-for(let rz=-1;rz<=5;rz+=2.5){const r=new THREE.Mesh(new THREE.BoxGeometry(15,.12,.15),woodM);r.position.set(0,-1.35,rz);TG.add(r);}
-// Water pooling
-const poolG=new THREE.PlaneGeometry(16,5,20,8);poolG.rotateX(-Math.PI/2);
-const poolP=poolG.attributes.position;for(let i=0;i<poolP.count;i++)poolP.setY(i,-1.35+Math.sin(poolP.getX(i)*.3)*.02);
-const pool=new THREE.Mesh(poolG,waterM);pool.position.set(0,0,2);TG.add(pool);
 
-// === DUG OUT ===
+// === DUCKBOARDS — detailed with damage ===
+const boardsGroup=new THREE.Group();
+for(let dx=-8;dx<=8;dx+=0.9){
+  const broken=Math.random()>0.78;
+  const missing=Math.random()>0.92;
+  if(missing) continue;
+  const bw=0.75+Math.random()*0.15;
+  const bg=roughBox(bw,0.07,3.2,2,1,4,broken?0.04:0.01);
+  const db=new THREE.Mesh(bg,woodMat);
+  db.position.set(dx,-1.5+(broken?-0.15-Math.random()*0.2:0)+(Math.random()-0.5)*0.04,2);
+  if(broken){
+    db.rotation.z=(Math.random()-0.5)*0.3;
+    db.rotation.x=(Math.random()-0.5)*0.15;
+  }
+  db.castShadow=true;db.receiveShadow=true;
+  boardsGroup.add(db);
+}
+// Cross runners underneath
+for(let rz=-0.5;rz<=4.5;rz+=1.8){
+  const run=new THREE.Mesh(new THREE.BoxGeometry(17,0.1,0.12),woodMat);
+  run.position.set(0,-1.55,rz);boardsGroup.add(run);
+}
+TG.add(boardsGroup);
+
+// Water pooling — multiple puddles with slight height variation
+for(let pi=0;pi<5;pi++){
+  const pw=3+Math.random()*4,pd=1.5+Math.random()*2;
+  const poolG=new THREE.PlaneGeometry(pw,pd,12,6);
+  poolG.rotateX(-Math.PI/2);
+  const pp=poolG.attributes.position;
+  for(let i=0;i<pp.count;i++)pp.setY(i,(Math.random()-0.5)*0.01);
+  const puddle=new THREE.Mesh(poolG,waterM);
+  puddle.position.set(-5+pi*3+Math.random()*2,-1.45,1.5+Math.random()*2);
+  TG.add(puddle);
+}
+// === DUG OUT — detailed shelter ===
 const dugout=new THREE.Group();
-const dF1=new THREE.Mesh(new THREE.BoxGeometry(.2,2.8,.2),woodM);dF1.position.set(4.8,.4,5.8);dugout.add(dF1);
-const dF2=new THREE.Mesh(new THREE.BoxGeometry(.2,2.8,.2),woodM);dF2.position.set(7.8,.4,5.8);dugout.add(dF2);
-const dL=new THREE.Mesh(new THREE.BoxGeometry(3.2,.22,.3),woodM);dL.position.set(6.3,1.9,5.8);dugout.add(dL);
-const dInt=new THREE.Mesh(new THREE.BoxGeometry(3.5,2.5,3),new THREE.MeshStandardMaterial({color:0x2a1a10,roughness:1}));
-dInt.position.set(6.3,.3,7.8);dugout.add(dInt);
-for(let rb=0;rb<4;rb++){const bm=new THREE.Mesh(new THREE.BoxGeometry(3.3,.15,.18),woodM);bm.position.set(6.3,1.7,6.2+rb*.5);dugout.add(bm);}
-const lPost=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.5,4),metalM);lPost.position.set(6.5,2,6.8);dugout.add(lPost);
-const lBody=new THREE.Mesh(new THREE.CylinderGeometry(.08,.06,.2,8),metalM);lBody.position.set(6.5,1.7,6.8);dugout.add(lBody);
+// Entrance frame — thick timber
+const dF1=new THREE.Mesh(roughBox(0.25,3.2,0.25,1,5,1,0.02),woodMat);dF1.position.set(4.5,0.2,5.8);dugout.add(dF1);
+const dF2=new THREE.Mesh(roughBox(0.25,3.2,0.25,1,5,1,0.02),woodMat);dF2.position.set(8,0.2,5.8);dugout.add(dF2);
+const dLintel=new THREE.Mesh(roughBox(3.8,0.3,0.4,4,1,1,0.02),woodMat);dLintel.position.set(6.25,1.9,5.8);dugout.add(dLintel);
+// Interior dark void
+const dInt=new THREE.Mesh(new THREE.BoxGeometry(4,2.8,3.5),new THREE.MeshStandardMaterial({color:0x0a0604,roughness:1}));
+dInt.position.set(6.25,0.2,8);dugout.add(dInt);
+// Roof beams — irregularly spaced
+for(let rb=0;rb<6;rb++){
+  const beam=new THREE.Mesh(roughBox(3.6,0.18,0.2,4,1,1,0.015),woodMat);
+  beam.position.set(6.25,1.75,6+rb*0.45);beam.rotation.z=(Math.random()-0.5)*0.03;dugout.add(beam);
+}
+// Corrugated iron roof panels
+for(let ci=0;ci<3;ci++){
+  const sheet=new THREE.PlaneGeometry(1.5,3,12,1);
+  const sp=sheet.attributes.position;
+  for(let i=0;i<sp.count;i++){
+    const x=sp.getX(i);
+    sp.setZ(i,Math.sin(x*15)*0.02); // corrugation
+  }
+  sheet.computeVertexNormals();
+  const iron=new THREE.Mesh(sheet,new THREE.MeshStandardMaterial({color:0x4a4a4a,roughness:0.6,metalness:0.3,side:THREE.DoubleSide}));
+  iron.position.set(4.8+ci*1.4,1.85,7);iron.rotation.x=-Math.PI/2;iron.rotation.z=(Math.random()-0.5)*0.05;
+  dugout.add(iron);
+}
+// Lamp post + lamp body
+const lPost=new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.6,4),metalM);lPost.position.set(6.5,2.1,7.2);dugout.add(lPost);
+const lBody=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.05,0.18,8),metalM);lBody.position.set(6.5,1.75,7.2);dugout.add(lBody);
+// Lamp glass
+const lGlass=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.12,8),new THREE.MeshBasicMaterial({color:0xffaa30,transparent:true,opacity:0.6}));
+lGlass.position.set(6.5,1.8,7.2);dugout.add(lGlass);
+// Bedframe in dugout
+const bedFrame=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.05,0.8),metalM);bedFrame.position.set(6,-0.8,8);dugout.add(bedFrame);
+for(const lx of[5.1,6.9]){
+  const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.5,4),metalM);
+  leg.position.set(lx,-1.05,8);dugout.add(leg);
+}
 TG.add(dugout);
 
-// === PERISCOPE ===
+// === PERISCOPE — more detailed ===
 const periG=new THREE.Group();
-const periT=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,2.5,8),metalM);periT.position.set(-5,3,-2);periG.add(periT);
-const periTop=new THREE.Mesh(new THREE.BoxGeometry(.2,.15,.15),metalM);periTop.position.set(-5,4.2,-2);periG.add(periTop);
-const mirr=new THREE.Mesh(new THREE.PlaneGeometry(.12,.1),new THREE.MeshPhysicalMaterial({color:0x90a0b0,roughness:.05,metalness:.8,clearcoat:1}));
-mirr.position.set(-5,4.22,-1.92);mirr.rotation.x=-.4;periG.add(mirr);
+const periTube=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.06,2.8,12),metalM);periTube.position.set(-5,3.2,-2);periG.add(periTube);
+const periTop=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.2,0.18),metalM);periTop.position.set(-5,4.6,-2);periG.add(periTop);
+const periBot=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.15,0.16),metalM);periBot.position.set(-5,1.85,-2);periG.add(periBot);
+// Mirror glint
+const mirror=new THREE.Mesh(new THREE.PlaneGeometry(0.1,0.08),new THREE.MeshPhysicalMaterial({color:0x90a8c0,roughness:0.02,metalness:0.9,clearcoat:1}));
+mirror.position.set(-5,4.65,-1.9);mirror.rotation.x=-0.4;periG.add(mirror);
+// Bracket attaching to wall
+const bracket=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.08,0.5),metalM);bracket.position.set(-5,2.5,-2.1);periG.add(bracket);
 TG.add(periG);
 
 // === AMMUNITION SHELF ===
 const shG=new THREE.Group();
-const shB=new THREE.Mesh(new THREE.BoxGeometry(2,.08,.5),woodM);shB.position.set(-3,1.5,-2.1);shG.add(shB);
-const shBr1=new THREE.Mesh(new THREE.BoxGeometry(.08,.6,.08),woodM);shBr1.position.set(-4,1.2,-2.1);shG.add(shBr1);
-const shBr2=new THREE.Mesh(new THREE.BoxGeometry(.08,.6,.08),woodM);shBr2.position.set(-2,1.2,-2.1);shG.add(shBr2);
-for(let ab=0;ab<3;ab++){
-  const bx=new THREE.Mesh(new THREE.BoxGeometry(.5,.3,.35),new THREE.MeshStandardMaterial({color:0x4a4a28,roughness:.78}));
-  bx.position.set(-3.8+ab*.7,1.7,-2.1);bx.rotation.y=(Math.random()-.5)*.2;shG.add(bx);
+const shBoard=new THREE.Mesh(roughBox(2.2,0.1,0.55,3,1,2,0.01),woodMat);shBoard.position.set(-3,1.4,-2.05);shG.add(shBoard);
+const shBr1=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.7,0.1),woodMat);shBr1.position.set(-4.1,1.05,-2.05);shG.add(shBr1);
+const shBr2=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.7,0.1),woodMat);shBr2.position.set(-1.9,1.05,-2.05);shG.add(shBr2);
+// Ammo boxes
+for(let ab=0;ab<4;ab++){
+  const bx=new THREE.Mesh(roughBox(0.45,0.25,0.3,2,2,2,0.01),new THREE.MeshStandardMaterial({color:0x3a3a1a,roughness:0.8}));
+  bx.position.set(-4+ab*0.55,1.6,-2.05);bx.rotation.y=(Math.random()-0.5)*0.3;shG.add(bx);
+}
+// Loose rounds
+for(let lr=0;lr<6;lr++){
+  const round=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.006,0.06,4),new THREE.MeshStandardMaterial({color:0x8a7030,metalness:0.6,roughness:0.3}));
+  round.position.set(-3.5+Math.random()*1.5,1.52,-2+Math.random()*0.1);
+  round.rotation.set(Math.random()*Math.PI,0,Math.PI/2+(Math.random()-0.5)*0.3);shG.add(round);
 }
 TG.add(shG);
 
-// === BARBED WIRE ===
-for(let wx=-8;wx<=8;wx+=3){
-  const post=new THREE.Mesh(new THREE.CylinderGeometry(.05,.06,2,6),woodM);
-  post.position.set(wx,1.5,-6);post.rotation.z=(Math.random()-.5)*.15;post.castShadow=true;TG.add(post);
-  for(let strand=0;strand<3;strand++){
-    const pts=[];for(let t=0;t<=1;t+=.05)pts.push(new THREE.Vector3(wx+Math.sin(t*Math.PI*8)*.3,.8+strand*.4+Math.sin(t*Math.PI*4)*.08,-5.5-t*3));
-    const c=new THREE.CatmullRomCurve3(pts);TG.add(new THREE.Mesh(new THREE.TubeGeometry(c,24,.015,4,false),wireM));
+// === BARBED WIRE — with actual barbs ===
+function barbedWireSegment(startX,startZ,length){
+  const g=new THREE.Group();
+  // Posts
+  for(let px=0;px<=length;px+=2.5){
+    const postH=1.5+Math.random()*0.5;
+    const post=new THREE.Mesh(roughBox(0.08,postH,0.08,1,3,1,0.01),woodMat);
+    post.position.set(startX+px,postH/2+0.3,startZ);
+    post.rotation.z=(Math.random()-0.5)*0.15;
+    post.rotation.x=(Math.random()-0.5)*0.1;
+    post.castShadow=true;g.add(post);
   }
-}
-for(let tw=0;tw<30;tw++){
-  const pts=[],bx=(Math.random()-.5)*16,bz=-5-Math.random()*5;
-  for(let t=0;t<=1;t+=.1)pts.push(new THREE.Vector3(bx+Math.sin(t*6)*1,1+Math.sin(t*4)*.5+Math.random()*.2,bz+t*2));
-  TG.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),12,.01,3,false),wireM));
+  // Wire strands with barbs
+  for(let strand=0;strand<4;strand++){
+    const pts=[];
+    for(let t=0;t<=length;t+=0.3){
+      pts.push(new THREE.Vector3(
+        startX+t+Math.sin(t*5)*0.15,
+        0.5+strand*0.35+Math.sin(t*3)*0.1+Math.random()*0.05,
+        startZ+(Math.random()-0.5)*0.3
+      ));
+    }
+    if(pts.length<2) continue;
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const wire=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.floor(length*8),0.012,4,false),wireM);
+    wire.castShadow=true;g.add(wire);
+    // Barbs every ~0.5 units
+    for(let bi=0;bi<length*2;bi++){
+      const bt=bi/(length*2);
+      const bp=curve.getPointAt(Math.min(bt,1));
+      for(let ba=0;ba<2;ba++){
+        const barb=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.001,0.06,3),wireM);
+        barb.position.copy(bp);
+        barb.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+        g.add(barb);
+      }
+    }
+  }
+  return g;
 }
 
-// === AIF SOLDIERS on Fire Step ===
+// Multiple wire belts
+TG.add(barbedWireSegment(-9,-5.5,18));
+TG.add(barbedWireSegment(-9,-7,18));
+TG.add(barbedWireSegment(-9,-9,18));
+// Dense tangle
+for(let tw=0;tw<40;tw++){
+  const pts=[],bx=-9+Math.random()*18,bz=-5-Math.random()*6;
+  for(let t=0;t<=1;t+=0.08){
+    pts.push(new THREE.Vector3(bx+Math.sin(t*8)*0.8,0.3+Math.sin(t*5)*0.5+Math.random()*0.2,bz+t*2.5));
+  }
+  if(pts.length<2)continue;
+  TG.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),16,0.008,3,false),wireM));
+}
+
+// === SOLDIERS — much more detailed ===
 function soldier(x,z,action){
   const g=new THREE.Group();
-  for(let lx of[-.15,.15]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.08,.07,.9,6),clothKhaki);leg.position.set(lx,-.05,0);g.add(leg);}
-  for(let lx of[-.15,.15]){const bt=new THREE.Mesh(new THREE.BoxGeometry(.16,.15,.25),new THREE.MeshStandardMaterial({color:0x3a2210,roughness:.85}));bt.position.set(lx,-.55,.03);g.add(bt);}
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(.45,.65,.3),clothKhaki);torso.position.set(0,.65,0);g.add(torso);
-  // Webbing/straps
-  for(let wx of[-.1,.1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.06,.6,.32),new THREE.MeshStandardMaterial({color:0x6a6038,roughness:.78}));w.position.set(wx,.65,0);g.add(w);}
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),skinM);head.position.set(0,1.15,0);g.add(head);
-  // Slouch hat (Australian)
-  const brim=new THREE.Mesh(new THREE.CylinderGeometry(.22,.24,.04,12),clothKhaki);brim.position.set(0,1.3,0);g.add(brim);
-  const crown=new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,.15,8),clothKhaki);crown.position.set(0,1.38,0);g.add(crown);
-  // Left brim turned up
-  const bu=new THREE.Mesh(new THREE.BoxGeometry(.08,.12,.05),clothKhaki);bu.position.set(-.2,1.35,0);bu.rotation.z=.4;g.add(bu);
-  
-  if(action==='rifle'){
-    const rifle=new THREE.Mesh(new THREE.CylinderGeometry(.02,.025,1.3,6),woodM);rifle.position.set(.3,.5,-.05);rifle.rotation.z=-.15;g.add(rifle);
-    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.6,4),metalM);barrel.position.set(.35,1.1,-.08);g.add(barrel);
-  } else if(action==='rum'){
-    const cup=new THREE.Mesh(new THREE.CylinderGeometry(.04,.035,.06,8),metalM);cup.position.set(.25,.8,.1);g.add(cup);
-  } else {
-    const arm=new THREE.Mesh(new THREE.CylinderGeometry(.04,.035,.45,5),clothKhaki);arm.position.set(.25,.85,-.15);arm.rotation.x=-.5;g.add(arm);
+  // Legs with puttees (wrapped calves)
+  for(const lx of[-0.13,0.13]){
+    // Thigh
+    const thigh=new THREE.Mesh(new THREE.CylinderGeometry(0.075,0.065,0.5,8),clothK);
+    thigh.position.set(lx,-0.1,0);g.add(thigh);
+    // Calf with puttee wrapping
+    const calf=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.055,0.45,8),clothK);
+    calf.position.set(lx,-0.55,0);g.add(calf);
+    // Boot
+    const boot=new THREE.Mesh(roughBox(0.14,0.15,0.22,2,2,2,0.008),bootM);
+    boot.position.set(lx,-0.82,0.02);g.add(boot);
+    // Boot sole
+    const sole=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.03,0.24),new THREE.MeshStandardMaterial({color:0x1a0a02,roughness:0.9}));
+    sole.position.set(lx,-0.88,0.02);g.add(sole);
   }
-  g.position.set(x,1.2,z);return g;
-}
-const s1=soldier(-3,-1.3,'peering');s1.rotation.y=Math.PI;TG.add(s1);
-const s2=soldier(-1,-1.3,'rifle');s2.rotation.y=Math.PI+.15;TG.add(s2);
-const s3=soldier(1,-1.3,'rum');s3.rotation.y=Math.PI-.1;TG.add(s3);
+  // Torso — shaped
+  const torsoG=new THREE.BoxGeometry(0.42,0.55,0.28,3,4,2);
+  const tp=torsoG.attributes.position;
+  for(let i=0;i<tp.count;i++){
+    const ty=tp.getY(i);
+    // Taper at waist, broaden at shoulders
+    const taper=1.0+ty*0.15;
+    tp.setX(i,tp.getX(i)*taper);
+    tp.setZ(i,tp.getZ(i)*(1.0+ty*0.05));
+  }
+  torsoG.computeVertexNormals();
+  const torso=new THREE.Mesh(torsoG,clothK);
+  torso.position.set(0,0.55,0);g.add(torso);
+  // Collar
+  const collar=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.18,0.06,8),clothK);
+  collar.position.set(0,0.85,0);g.add(collar);
+  // Webbing — cross straps
+  for(const wx of[-0.08,0.08]){
+    const strap=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.55,0.3),leatherM);
+    strap.position.set(wx,0.55,0);g.add(strap);
+  }
+  // Belt
+  const belt=new THREE.Mesh(new THREE.BoxGeometry(0.44,0.05,0.3),leatherM);
+  belt.position.set(0,0.3,0);g.add(belt);
+  // Ammo pouches on belt
+  for(const px of[-0.18,0.18]){
+    const pouch=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,0.06),leatherM);
+    pouch.position.set(px,0.27,0.15);g.add(pouch);
+  }
+  // Head — shaped sphere
+  const headG=new THREE.SphereGeometry(0.13,12,10);
+  const hp=headG.attributes.position;
+  for(let i=0;i<hp.count;i++){
+    const py=hp.getY(i),pz=hp.getZ(i);
+    if(py<-0.05)hp.setY(i,py*1.15); // jaw
+    if(pz>0.08)hp.setZ(i,pz*1.1); // nose area slight push
+  }
+  headG.computeVertexNormals();
+  const head=new THREE.Mesh(headG,skinM);
+  head.position.set(0,1.05,0);g.add(head);
+  // Ears
+  for(const ex of[-0.12,0.12]){
+    const ear=new THREE.Mesh(new THREE.SphereGeometry(0.025,4,4),skinM);
+    ear.position.set(ex,1.03,0);ear.scale.set(0.6,1,0.8);g.add(ear);
+  }
+  // Slouch hat — Australian AIF
+  const brimG=new THREE.CylinderGeometry(0.22,0.25,0.035,16);
+  const brim=new THREE.Mesh(brimG,new THREE.MeshStandardMaterial({color:0x4a4630,roughness:0.85}));
+  brim.position.set(0,1.2,0);g.add(brim);
+  const crown=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.14,0.14,12),new THREE.MeshStandardMaterial({color:0x4a4630,roughness:0.85}));
+  crown.position.set(0,1.3,0);g.add(crown);
+  // Left brim pinned up
+  const pinBrim=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.1,0.04),new THREE.MeshStandardMaterial({color:0x4a4630,roughness:0.85}));
+  pinBrim.position.set(-0.19,1.25,0);pinBrim.rotation.z=0.5;g.add(pinBrim);
+  // Hat band
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(0.142,0.142,0.025,16),leatherM);
+  band.position.set(0,1.23,0);g.add(band);
+  // Backpack/kit
+  const pack=new THREE.Mesh(roughBox(0.3,0.28,0.15,2,2,1,0.01),new THREE.MeshStandardMaterial({color:0x4a4828,roughness:0.85}));
+  pack.position.set(0,0.5,-0.2);g.add(pack);
+  // Bedroll on top of pack
+  const bedroll=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.32,8),clothK);
+  bedroll.position.set(0,0.72,-0.2);bedroll.rotation.z=Math.PI/2;g.add(bedroll);
 
-// === SCATTER: tins, mugs, rats ===
-for(let i=0;i<8;i++){
-  const tin=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.08,8),metalM);
-  tin.position.set(-4+Math.random()*10,-1.3+Math.random()*.1,1+Math.random()*4);
-  tin.rotation.set(Math.random()*Math.PI,(Math.random()-.5)*2,Math.random()*Math.PI);TG.add(tin);
+  if(action==='rifle'){
+    // Lee-Enfield rifle
+    const stock=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,0.7,6),woodMat);
+    stock.position.set(0.28,0.35,-0.05);stock.rotation.z=-0.1;g.add(stock);
+    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.012,0.65,6),metalM);
+    barrel.position.set(0.3,0.95,-0.06);g.add(barrel);
+    // Bolt
+    const bolt=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.08,4),metalM);
+    bolt.position.set(0.32,0.6,0.02);bolt.rotation.z=Math.PI/2;g.add(bolt);
+    // Cleaning rag in hand
+    const rag=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.06,0.04),new THREE.MeshStandardMaterial({color:0x7a7060,roughness:0.9}));
+    rag.position.set(0.2,0.3,0.05);g.add(rag);
+  } else if(action==='rum'){
+    const cup=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.035,0.06,8),metalM);
+    cup.position.set(0.22,0.7,0.12);g.add(cup);
+    // Forearm extended
+    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.04,0.35,6),clothK);
+    arm.position.set(0.18,0.6,0.08);arm.rotation.x=-0.3;arm.rotation.z=-0.2;g.add(arm);
+    // Hand
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,4),skinM);
+    hand.position.set(0.22,0.7,0.1);g.add(hand);
+  } else {
+    // Peering forward — hand on parapet
+    const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.04,0.4,6),clothK);
+    arm.position.set(0.22,0.75,-0.12);arm.rotation.x=-0.6;g.add(arm);
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,4),skinM);
+    hand.position.set(0.25,0.9,-0.25);g.add(hand);
+  }
+  g.position.set(x,1.2,z);
+  g.castShadow=true;
+  return g;
 }
-for(let i=0;i<4;i++){
-  const mug=new THREE.Mesh(new THREE.CylinderGeometry(.04,.035,.07,8),new THREE.MeshStandardMaterial({color:0x9a8a68,roughness:.6}));
-  mug.position.set(-2+Math.random()*6,-1.3,1.5+Math.random()*3);mug.rotation.x=Math.random()>.5?Math.PI/2:0;TG.add(mug);
+
+const s1=soldier(-3.5,-1.3,'peering');s1.rotation.y=Math.PI;TG.add(s1);
+const s2=soldier(-1,-1.3,'rifle');s2.rotation.y=Math.PI+0.15;TG.add(s2);
+const s3=soldier(1.5,-1.3,'rum');s3.rotation.y=Math.PI-0.1;TG.add(s3);
+
+// === SCATTER DETAIL ===
+// Bully beef tins (with labels suggested by colour)
+for(let i=0;i<14;i++){
+  const tin=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.075,10),
+    new THREE.MeshStandardMaterial({color:i%3===0?0x6a5a3a:0x505048,roughness:0.5,metalness:0.3}));
+  tin.position.set(-5+Math.random()*12,-1.38+Math.random()*0.08,0.5+Math.random()*5);
+  tin.rotation.set(Math.random()*Math.PI,Math.random()*6.28,Math.random()*Math.PI);TG.add(tin);
 }
+// Tea mugs
+for(let i=0;i<6;i++){
+  const mugG=new THREE.CylinderGeometry(0.04,0.035,0.07,8);
+  const mug=new THREE.Mesh(mugG,new THREE.MeshStandardMaterial({color:0x8a7a60,roughness:0.6}));
+  mug.position.set(-3+Math.random()*8,-1.38,1+Math.random()*4);
+  mug.rotation.x=Math.random()>0.6?Math.PI/2+(Math.random()-0.5)*0.3:0;TG.add(mug);
+  // Mug handle
+  if(Math.random()>0.3){
+    const handle=new THREE.Mesh(new THREE.TorusGeometry(0.02,0.005,4,6,Math.PI),
+      new THREE.MeshStandardMaterial({color:0x8a7a60,roughness:0.6}));
+    handle.position.copy(mug.position);handle.position.x+=0.04;handle.rotation.y=Math.PI/2;TG.add(handle);
+  }
+}
+// Rats — more detailed
 function rat(x,y,z){
   const rg=new THREE.Group();
-  const body=new THREE.Mesh(new THREE.SphereGeometry(.08,6,4),new THREE.MeshStandardMaterial({color:0x4a3828,roughness:.9}));
-  body.scale.set(1,.7,1.5);rg.add(body);
-  const hd=new THREE.Mesh(new THREE.SphereGeometry(.04,5,4),new THREE.MeshStandardMaterial({color:0x4a3828,roughness:.9}));
-  hd.position.set(0,.02,.12);rg.add(hd);
-  const tp=[new THREE.Vector3(0,0,-.12),new THREE.Vector3(.02,.02,-.22),new THREE.Vector3(-.01,.01,-.35)];
-  rg.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(tp),new THREE.LineBasicMaterial({color:0x5a4838})));
-  rg.position.set(x,y,z);rg.rotation.y=Math.random()*Math.PI*2;return rg;
+  const ratMat=new THREE.MeshStandardMaterial({color:0x3a2a18,roughness:0.85});
+  // Body — elongated
+  const bodyG=new THREE.SphereGeometry(0.08,8,6);
+  const body=new THREE.Mesh(bodyG,ratMat);body.scale.set(1,0.65,1.6);rg.add(body);
+  // Head
+  const headG=new THREE.SphereGeometry(0.04,6,5);
+  const head=new THREE.Mesh(headG,ratMat);head.position.set(0,0.02,0.13);head.scale.set(0.9,0.8,1.2);rg.add(head);
+  // Snout
+  const snout=new THREE.Mesh(new THREE.SphereGeometry(0.02,4,3),ratMat);
+  snout.position.set(0,0,0.18);snout.scale.set(0.7,0.6,1);rg.add(snout);
+  // Ears
+  for(const ex of[-0.025,0.025]){
+    const ear=new THREE.Mesh(new THREE.SphereGeometry(0.012,4,3),new THREE.MeshStandardMaterial({color:0x5a4030,roughness:0.8}));
+    ear.position.set(ex,0.05,0.12);rg.add(ear);
+  }
+  // Eyes
+  for(const ex of[-0.015,0.015]){
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(0.005,4,3),new THREE.MeshStandardMaterial({color:0x111111}));
+    eye.position.set(ex,0.035,0.15);rg.add(eye);
+  }
+  // Tail — curve
+  const tailPts=[new THREE.Vector3(0,0,-0.12),new THREE.Vector3(0.03,0.03,-0.2),new THREE.Vector3(-0.02,0.01,-0.3),new THREE.Vector3(0.01,0.04,-0.38)];
+  const tailCurve=new THREE.CatmullRomCurve3(tailPts);
+  const tail=new THREE.Mesh(new THREE.TubeGeometry(tailCurve,8,0.004,3,false),ratMat);
+  rg.add(tail);
+  // Legs (tiny)
+  for(const[lx,lz] of[[-0.04,0.05],[0.04,0.05],[-0.04,-0.06],[0.04,-0.06]]){
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.006,0.04,4),ratMat);
+    leg.position.set(lx,-0.04,lz);rg.add(leg);
+  }
+  rg.position.set(x,y,z);rg.rotation.y=Math.random()*Math.PI*2;
+  return rg;
 }
-TG.add(rat(4,-1.3,3.5));TG.add(rat(5.5,-1.3,4));TG.add(rat(-1,-1.3,4.5));TG.add(rat(3,-1.28,2));TG.add(rat(6,-1.25,3));
+for(const[rx,ry,rz] of[[4,-1.35,3.5],[5.5,-1.35,4.2],[-1,-1.35,4.8],[3,-1.33,2.2],[6.5,-1.32,3.5],[2,-1.36,5],[-3,-1.34,3.8]]){
+  TG.add(rat(rx,ry,rz));
+}
 
-// === TRENCH SIGN (labelling) ===
-const signPost=new THREE.Mesh(new THREE.BoxGeometry(.08,1.5,.08),woodM);signPost.position.set(8,.5,3);TG.add(signPost);
-const signBoard=new THREE.Mesh(new THREE.BoxGeometry(1.2,.4,.05),woodLt);signBoard.position.set(8,1.3,3);TG.add(signBoard);
+// Debris — broken wood, corrugated iron scraps, rubble
+for(let d=0;d<20;d++){
+  const debris=new THREE.Mesh(
+    roughBox(0.3+Math.random()*0.4,0.05+Math.random()*0.06,0.15+Math.random()*0.2,2,1,1,0.02),
+    d%3===0?woodMat:mudMat
+  );
+  debris.position.set(-8+Math.random()*16,-1.4+Math.random()*0.15,-0.5+Math.random()*7);
+  debris.rotation.set(Math.random()*0.5,Math.random()*6.28,Math.random()*0.5);TG.add(debris);
+}
+
+// Corrugated iron scraps in trench
+for(let ci=0;ci<4;ci++){
+  const scrapG=new THREE.PlaneGeometry(0.8+Math.random()*0.5,0.5+Math.random()*0.3,8,1);
+  const sp=scrapG.attributes.position;
+  for(let i=0;i<sp.count;i++)sp.setZ(i,Math.sin(sp.getX(i)*12)*0.015);
+  scrapG.computeVertexNormals();
+  const scrap=new THREE.Mesh(scrapG,new THREE.MeshStandardMaterial({color:0x5a5a50,roughness:0.6,metalness:0.2,side:THREE.DoubleSide}));
+  scrap.position.set(-4+ci*3,-1.2+Math.random()*0.5,1+Math.random()*4);
+  scrap.rotation.set(Math.random()*Math.PI,Math.random()*6.28,Math.random()*Math.PI);TG.add(scrap);
+}
+
+// Ration boxes on ground
+for(let rb=0;rb<3;rb++){
+  const box=new THREE.Mesh(roughBox(0.35,0.2,0.25,2,2,2,0.01),woodMat);
+  box.position.set(2+rb*1.5,-1.35,4+Math.random());box.rotation.y=Math.random()*0.5;TG.add(box);
+}
+
+// Gas mask bag hanging on wall
+const gasBag=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.25,0.1),new THREE.MeshStandardMaterial({color:0x4a4430,roughness:0.85}));
+gasBag.position.set(-6,0.8,-2.05);TG.add(gasBag);
+const gasStrap=new THREE.Mesh(new THREE.BoxGeometry(0.03,0.6,0.03),leatherM);
+gasStrap.position.set(-6,1.2,-2.05);TG.add(gasStrap);
+
+// Trench sign
+const signPost=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.8,0.08),woodMat);signPost.position.set(8.5,0.3,3);TG.add(signPost);
+const signBoard=new THREE.Mesh(roughBox(1.4,0.45,0.06,2,1,1,0.01),woodMat);signBoard.position.set(8.5,1.3,3);TG.add(signBoard);
 
 S.add(TG);
-
-// === RAIN ===
-const rainN=1500,rainG=new THREE.BufferGeometry(),rainP=new Float32Array(rainN*3),rainV=new Float32Array(rainN);
-for(let i=0;i<rainN;i++){rainP[i*3]=(Math.random()-.5)*50;rainP[i*3+1]=Math.random()*25;rainP[i*3+2]=(Math.random()-.5)*50;rainV[i]=.12+Math.random()*.12;}
+// === PARTICLES: RAIN — heavier, visible streaks ===
+const rainN=3000;
+const rainG=new THREE.BufferGeometry();
+const rainP=new Float32Array(rainN*3),rainV=new Float32Array(rainN);
+for(let i=0;i<rainN;i++){
+  rainP[i*3]=(Math.random()-0.5)*60;
+  rainP[i*3+1]=Math.random()*30;
+  rainP[i*3+2]=(Math.random()-0.5)*60;
+  rainV[i]=0.18+Math.random()*0.15;
+}
 rainG.setAttribute('position',new THREE.BufferAttribute(rainP,3));
-const rain=new THREE.Points(rainG,new THREE.PointsMaterial({color:0x8898b0,size:.04,transparent:true,opacity:.35,sizeAttenuation:true}));S.add(rain);
+// Rain as stretched points for streak effect
+const rain=new THREE.Points(rainG,new THREE.PointsMaterial({
+  color:0x8898b8,size:0.06,transparent:true,opacity:0.3,sizeAttenuation:true
+}));
+S.add(rain);
 
-// === MIST ===
-const mistN=400,mistG=new THREE.BufferGeometry(),mistP=new Float32Array(mistN*3);
-for(let i=0;i<mistN;i++){mistP[i*3]=(Math.random()-.5)*60;mistP[i*3+1]=Math.random()*5;mistP[i*3+2]=(Math.random()-.5)*60;}
+// === GROUND MIST — volumetric-ish large particles ===
+const mistN=600;
+const mistG=new THREE.BufferGeometry();
+const mistP=new Float32Array(mistN*3);
+for(let i=0;i<mistN;i++){
+  mistP[i*3]=(Math.random()-0.5)*80;
+  mistP[i*3+1]=Math.random()*3;
+  mistP[i*3+2]=(Math.random()-0.5)*80;
+}
 mistG.setAttribute('position',new THREE.BufferAttribute(mistP,3));
-const mist=new THREE.Points(mistG,new THREE.PointsMaterial({color:0x708088,size:.6,transparent:true,opacity:.1,sizeAttenuation:true}));S.add(mist);
+const mist=new THREE.Points(mistG,new THREE.PointsMaterial({
+  color:0x5a6070,size:1.2,transparent:true,opacity:0.06,sizeAttenuation:true
+}));
+S.add(mist);
 
-// === CAMERA ===
-let drag=false,pv={x:0,y:0},sph={t:Math.PI*.6,p:Math.PI/3.5,r:22};
-function uC(){cam.position.set(sph.r*Math.sin(sph.p)*Math.sin(sph.t),sph.r*Math.cos(sph.p),sph.r*Math.sin(sph.p)*Math.cos(sph.t));cam.lookAt(0,1,0);}uC();
+// === DISTANT FLARE — occasional illumination in No Man's Land ===
+const flare=new THREE.PointLight(0xffe8c0,0,50);
+flare.position.set(-5,12,-20);S.add(flare);
+const flareBulb=new THREE.Mesh(new THREE.SphereGeometry(0.15,6,4),new THREE.MeshBasicMaterial({color:0xffe8c0,transparent:true,opacity:0}));
+flareBulb.position.copy(flare.position);S.add(flareBulb);
+let flareTimer=0,flareActive=false;
+
+// === SHELL CRATER WATER — pools in No Man's Land ===
+for(let ci=0;ci<6;ci++){
+  const cx=[-12,-5,3,-8,8,-15][ci],cz=[-8,-12,-10,-18,-14,-22][ci];
+  const cr=1.5+Math.random()*1.5;
+  const craterPool=new THREE.Mesh(
+    new THREE.CircleGeometry(cr,12),
+    new THREE.MeshPhysicalMaterial({color:0x1a1a10,roughness:0.05,metalness:0.1,transparent:true,opacity:0.4,clearcoat:0.8})
+  );
+  craterPool.rotation.x=-Math.PI/2;
+  craterPool.position.set(cx,0.1+Math.sin(ci)*0.3,cz);S.add(craterPool);
+}
+
+// === DEAD TREE STUMPS in No Man's Land ===
+for(let ts=0;ts<5;ts++){
+  const tx=-15+ts*7+Math.random()*3,tz=-8-Math.random()*12;
+  const stumpH=0.5+Math.random()*1.5;
+  const stump=new THREE.Mesh(
+    roughBox(0.2+Math.random()*0.15,stumpH,0.2+Math.random()*0.15,2,4,2,0.04),
+    woodMat
+  );
+  stump.position.set(tx,stumpH/2+0.3,tz);
+  stump.rotation.set((Math.random()-0.5)*0.3,Math.random()*6.28,(Math.random()-0.5)*0.2);
+  stump.castShadow=true;S.add(stump);
+  // Broken branches
+  for(let br=0;br<2;br++){
+    const branch=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.04,0.6+Math.random()*0.5,4),woodMat);
+    branch.position.set(tx+(Math.random()-0.5)*0.5,stumpH*0.7,tz+(Math.random()-0.5)*0.5);
+    branch.rotation.set(Math.random()*0.8,0,(Math.random()-0.5)*0.8);S.add(branch);
+  }
+}
+
+// === CAMERA CONTROLS ===
+let drag=false,pv={x:0,y:0};
+let sph={t:Math.PI*0.55,p:Math.PI/3.2,r:24};
+function uC(){
+  cam.position.set(
+    sph.r*Math.sin(sph.p)*Math.sin(sph.t),
+    sph.r*Math.cos(sph.p),
+    sph.r*Math.sin(sph.p)*Math.cos(sph.t)
+  );
+  cam.lookAt(0,0.5,1);
+}
+uC();
+
 R.domElement.addEventListener('mousedown',e=>{drag=true;pv={x:e.clientX,y:e.clientY};});
-R.domElement.addEventListener('mousemove',e=>{if(!drag)return;sph.t-=(e.clientX-pv.x)*.005;sph.p=Math.max(.2,Math.min(Math.PI/2.1,sph.p+(e.clientY-pv.y)*.005));pv={x:e.clientX,y:e.clientY};uC();});
-R.domElement.addEventListener('mouseup',()=>drag=false);R.domElement.addEventListener('mouseleave',()=>drag=false);
-R.domElement.addEventListener('wheel',e=>{sph.r=Math.max(8,Math.min(50,sph.r+e.deltaY*.03));uC();});
+R.domElement.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  sph.t-=(e.clientX-pv.x)*0.004;
+  sph.p=Math.max(0.25,Math.min(Math.PI/2.1,sph.p+(e.clientY-pv.y)*0.004));
+  pv={x:e.clientX,y:e.clientY};uC();
+});
+R.domElement.addEventListener('mouseup',()=>drag=false);
+R.domElement.addEventListener('mouseleave',()=>drag=false);
+R.domElement.addEventListener('wheel',e=>{sph.r=Math.max(8,Math.min(50,sph.r+e.deltaY*0.025));uC();});
 R.domElement.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;pv={x:e.touches[0].clientX,y:e.touches[0].clientY};}});
-R.domElement.addEventListener('touchmove',e=>{if(!drag||e.touches.length!==1)return;e.preventDefault();sph.t-=(e.touches[0].clientX-pv.x)*.005;sph.p=Math.max(.2,Math.min(Math.PI/2.1,sph.p+(e.touches[0].clientY-pv.y)*.005));pv={x:e.touches[0].clientX,y:e.touches[0].clientY};uC();},{passive:false});
+R.domElement.addEventListener('touchmove',e=>{
+  if(!drag||e.touches.length!==1)return;e.preventDefault();
+  sph.t-=(e.touches[0].clientX-pv.x)*0.004;
+  sph.p=Math.max(0.25,Math.min(Math.PI/2.1,sph.p+(e.touches[0].clientY-pv.y)*0.004));
+  pv={x:e.touches[0].clientX,y:e.touches[0].clientY};uC();
+},{passive:false});
 R.domElement.addEventListener('touchend',()=>drag=false);
 
 // === MARKERS ===
 const mL=document.getElementById('ml');
-const mE=INFO_POINTS.map(pt=>{const el=document.createElement('div');el.className='pm';el.innerHTML='<div class="md"><div class="mr"></div></div><div class="mt">'+pt.title+'</div>';el.addEventListener('click',()=>oP(pt));mL.appendChild(el);return{el,pt};});
-function uM(){mE.forEach(({el,pt})=>{const v=new THREE.Vector3(pt.pos.x,pt.pos.y,pt.pos.z).project(cam);if(v.z>1){el.style.display='none';return;}el.style.display='block';el.style.transform='translate('+(((v.x*.5+.5)*innerWidth-11))+'px,'+((-v.y*.5+.5)*innerHeight-11)+'px)';});}
+const mE=INFO_POINTS.map(pt=>{
+  const el=document.createElement('div');el.className='pm';
+  el.innerHTML='<div class="md"><div class="mr"></div></div><div class="mt">'+pt.title+'</div>';
+  el.addEventListener('click',()=>oP(pt));
+  mL.appendChild(el);return{el,pt};
+});
+function uM(){
+  mE.forEach(({el,pt})=>{
+    const v=new THREE.Vector3(pt.pos.x,pt.pos.y,pt.pos.z).project(cam);
+    if(v.z>1){el.style.display='none';return;}
+    el.style.display='block';
+    el.style.transform='translate('+((v.x*0.5+0.5)*innerWidth-11)+'px,'+((-v.y*0.5+0.5)*innerHeight-11)+'px)';
+  });
+}
 
-// === PANEL ===
+// === PANEL LOGIC ===
 function oP(pt){
-  const sbs=pt.subj.map(s=>{const l={history:'History',health:'Health/PE',science:'Science',math:'Maths'};return'<span class="pst '+s+'">'+l[s]+'</span>';}).join('');
+  const sbs=pt.subj.map(s=>{
+    const l={history:'History',health:'Health/PE',science:'Science',math:'Maths'};
+    return'<span class="pst '+s+'">'+l[s]+'</span>';
+  }).join('');
   document.getElementById('panelH').innerHTML='<button class="pc" onclick="cP()">✕</button><div class="pn">0'+pt.id+'</div><h2>'+pt.title+'</h2><div class="ps">'+pt.subtitle+'</div><div class="pcur"><code>'+pt.ac+'</code><span>— '+pt.acd+'</span></div><div class="psubs">'+sbs+'</div>';
-  const ps=pt.paragraphs.map(p=>'<p>'+p+'</p>').join(''),sts=Object.entries(pt.stats).map(([k,v])=>'<div class="sr"><span class="sl">'+k+'</span><span class="sv">'+v+'</span></div>').join(''),voc=pt.vocabulary.map(v=>'<div class="vw"><strong>'+v.word+'</strong><span>'+v.def+'</span></div>').join('');
+  const ps=pt.paragraphs.map(p=>'<p>'+p+'</p>').join('');
+  const sts=Object.entries(pt.stats).map(([k,v])=>'<div class="sr"><span class="sl">'+k+'</span><span class="sv">'+v+'</span></div>').join('');
+  const voc=pt.vocabulary.map(v=>'<div class="vw"><strong>'+v.word+'</strong><span>'+v.def+'</span></div>').join('');
   document.getElementById('panelB').innerHTML=ps+'<div class="ta"><div class="lbl">🪖 Think, Write &amp; Investigate</div><p>'+pt.thinkAbout+'</p></div><div class="psts"><div class="st">By the Numbers</div>'+sts+'</div><div class="vc"><div class="lbl">📖 Key Vocabulary</div>'+voc+'</div>';
   document.getElementById('infoPanel').classList.add('active');
   document.querySelectorAll('.pt').forEach(t=>t.classList.remove('active'));
@@ -555,31 +1054,92 @@ document.getElementById('sidebarBtn').addEventListener('click',()=>{
   document.getElementById('sidebar').classList.toggle('active');
   document.getElementById('infoPanel').classList.remove('active');
 });
-document.getElementById('sidebarBody').innerHTML=DAILY_ROUTINE.map(r=>'<div class="routine-row"><div class="routine-time">'+r.time+'</div><div class="routine-info"><div class="routine-event">'+r.event+'</div><div class="routine-desc">'+r.desc+'</div></div></div>').join('');
+document.getElementById('sidebarBody').innerHTML=DAILY_ROUTINE.map(r=>
+  '<div class="routine-row"><div class="routine-time">'+r.time+'</div><div class="routine-info"><div class="routine-event">'+r.event+'</div><div class="routine-desc">'+r.desc+'</div></div></div>'
+).join('');
 
 // ENTER
-document.getElementById('enterBtn').addEventListener('click',()=>{document.getElementById('intro').classList.add('fade-out');setTimeout(()=>{document.getElementById('intro').style.display='none';document.getElementById('hudTop').style.opacity='1';document.getElementById('hudBot').style.opacity='1';document.getElementById('hint').style.opacity='1';},600);});
+document.getElementById('enterBtn').addEventListener('click',()=>{
+  document.getElementById('intro').classList.add('fade-out');
+  setTimeout(()=>{
+    document.getElementById('intro').style.display='none';
+    document.getElementById('hudTop').style.opacity='1';
+    document.getElementById('hudBot').style.opacity='1';
+    document.getElementById('hint').style.opacity='1';
+  },800);
+});
 
-// === ANIMATE ===
+// === ANIMATION LOOP ===
 let time=0;
 function anim(){
-  requestAnimationFrame(anim);time+=.008;
+  requestAnimationFrame(anim);
+  time+=0.006;
+
+  // Rain
   const rp=rain.geometry.attributes.position;
-  for(let i=0;i<rp.count;i++){let y=rp.getY(i)-rainV[i];if(y<-2){y=25;rp.setX(i,(Math.random()-.5)*50);rp.setZ(i,(Math.random()-.5)*50);}rp.setY(i,y);rp.setX(i,rp.getX(i)+.004);}
+  for(let i=0;i<rp.count;i++){
+    let y=rp.getY(i)-rainV[i];
+    if(y<-2){y=30;rp.setX(i,(Math.random()-0.5)*60);rp.setZ(i,(Math.random()-0.5)*60);}
+    rp.setY(i,y);
+    rp.setX(i,rp.getX(i)+0.006); // wind
+  }
   rp.needsUpdate=true;
+
+  // Mist drift
   const mp=mist.geometry.attributes.position;
-  for(let i=0;i<mp.count;i++){let x=mp.getX(i)+.005;if(x>30)x=-30;mp.setX(i,x);mp.setY(i,mp.getY(i)+Math.sin(time*.2+i*.05)*.003);}
+  for(let i=0;i<mp.count;i++){
+    let x=mp.getX(i)+0.004+Math.sin(time*0.3+i*0.02)*0.002;
+    if(x>40) x=-40;
+    mp.setX(i,x);
+    mp.setY(i,mp.getY(i)+Math.sin(time*0.15+i*0.03)*0.002);
+  }
   mp.needsUpdate=true;
-  lamp.intensity=.9+Math.sin(time*10)*.2+Math.sin(time*17)*.1+Math.random()*.06;
-  lampBulb.scale.setScalar(.85+Math.sin(time*12)*.15);
-  horizGlow.intensity=.35+Math.sin(time*.5)*.05;
-  const wp=pool.geometry.attributes.position;
-  for(let i=0;i<wp.count;i++)wp.setY(i,-1.35+Math.sin(wp.getX(i)*.5+time*2)*.01);
-  wp.needsUpdate=true;
-  uM();R.render(S,cam);
+
+  // Lamp flicker — organic
+  lamp.intensity=1.0+Math.sin(time*12)*0.25+Math.sin(time*19)*0.12+Math.sin(time*31)*0.06+(Math.random()-0.5)*0.08;
+  lampGlow.scale.setScalar(0.8+Math.sin(time*14)*0.2);
+  const lampHue=0.06+Math.sin(time*8)*0.01;
+  lamp.color.setHSL(lampHue,0.8,0.5);
+
+  // Horizon glow pulse
+  horizGlow.intensity=0.4+Math.sin(time*0.3)*0.08;
+
+  // Distant flare — fires every ~20 seconds
+  flareTimer+=0.006;
+  if(!flareActive&&flareTimer>18+Math.random()*8){
+    flareActive=true;flareTimer=0;
+    flare.position.set(-15+Math.random()*30,10+Math.random()*5,-15-Math.random()*10);
+    flareBulb.position.copy(flare.position);
+  }
+  if(flareActive){
+    flareTimer+=0.006;
+    const ft=flareTimer;
+    if(ft<1){
+      // Rise
+      flare.intensity=ft*3;
+      flareBulb.material.opacity=ft*0.8;
+      flare.position.y+=0.05;flareBulb.position.y+=0.05;
+    } else if(ft<4){
+      // Hang and drift down slowly
+      flare.intensity=3-((ft-1)/3)*2.5;
+      flareBulb.material.opacity=0.8-((ft-1)/3)*0.7;
+      flare.position.y-=0.01;flareBulb.position.y-=0.01;
+    } else {
+      flare.intensity=0;flareBulb.material.opacity=0;
+      flareActive=false;flareTimer=0;
+    }
+  }
+
+  uM();
+  R.render(S,cam);
 }
 anim();
-addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();R.setSize(innerWidth,innerHeight);});
+
+addEventListener('resize',()=>{
+  cam.aspect=innerWidth/innerHeight;
+  cam.updateProjectionMatrix();
+  R.setSize(innerWidth,innerHeight);
+});
 
 </script>
 </body>
